@@ -36,11 +36,11 @@ class Block():
     air = pg.image.load("./Images/block icons/air.png")
 
     #list variable for storing block data. structure is BlockMatrix[Horizontal Columns(uses y input)][Block in column(uses x input)][blockType]
-    BlockMatrix = [[[]for i in range(26)]for i in range(26)]
+    BlockMatrix = [[[]for i in range(100)]for i in range(20)]
 
     #sets every block to air
     for y in range(20):
-        for x in range(20):
+        for x in range(99):
             BlockMatrix[y][x] = air
 
     
@@ -50,7 +50,7 @@ class Block():
     class Type():
 
         air = pg.image.load("./Images/block icons/air.png")
-        stone = pg.image.load("./Images/block icons/sand.png")
+        stone = pg.image.load("./Images/block icons/stone.png")
         dirt = pg.image.load("./Images/block icons/dirt.png")
         grass = pg.image.load("./Images/block icons/grass.png")
         sand = pg.image.load("./Images/block icons/sand.png")
@@ -60,11 +60,14 @@ class Block():
     class Grid():
 
         #inits the BlockGrid
-        def placeBlock(position,blockType):
+        def placeBlock(position,blockType,skipRowTranslation = False):
             #translate grid based input into screen cords
-            x = math.floor(position[0]/40)
-            y = math.floor(position[1]/40)
-
+            if skipRowTranslation != True:
+                x = math.floor(position[0]/40)
+                y = math.floor(position[1]/40)
+            else:
+                x = position[0]
+                y = position[1]
         #set index of coordinates to 
             Block.BlockMatrix[y][x] = blockType
         #shfits coordinate data for block matrix
@@ -83,7 +86,7 @@ class Block():
     class Renderer():
         
         air = pg.image.load("./Images/block icons/air.png")
-        stone = pg.image.load("./Images/block icons/sand.png")
+        stone = pg.image.load("./Images/block icons/stone.png")
         dirt = pg.image.load("./Images/block icons/dirt.png")
         grass = pg.image.load("./Images/block icons/grass.png")
         sand = pg.image.load("./Images/block icons/sand.png")
@@ -112,23 +115,20 @@ class Block():
 
 class Character():
     #things defined at top are used in many functions and subclasses
-    characterLocation = [13,19]
-    characterDrawLocation = [120,400]
+    characterLocation = [50,19]
+    characterDrawLocation = [400,400]
 
     characterImage = pg.image.load("./Images/Character Icons/john.png")
-    class Move():
+    class Pos():
 
         #moves the character left or right
-        def Left(moveAmount = 1):
-          Character.characterDrawLocation[0]-=moveAmount*40
-          Character.characterLocation[0]-=moveAmount
-
-        def Right(moveAmount = 1):
-            Character.characterLocation[0]+=moveAmount*40
-            Character.characterLocation[1]+=moveAmount
+        def update(moveAmount = 1):
+            Character.characterDrawLocation[0] = Character.characterLocation[0]*40
     class Render():
 
-        def still(surface,imageIn):
+        def draw(surface,imageIn):
         #renders the character still
             surface.blit(imageIn,(Character.characterDrawLocation[0],Character.characterDrawLocation[1]))
+        def drawStill(surface,imageIn):
+            surface.blit(imageIn,(325,400))
          
