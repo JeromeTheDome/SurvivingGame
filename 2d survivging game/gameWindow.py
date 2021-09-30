@@ -1,14 +1,18 @@
 import pygame
+import math
 
 pg = pygame
 
 class ForeGround():
+  cursorIcon = pg.image.load("C:/Users/jerth/source/repos/GameSolution/2d survivging game/Images/background images/cursor.png")
+
   #inits the pygame window
   def __init__(self):
     pg.init()
     ForeGround.display = pg.display.set_mode((800,800))
   def getMousePos():
    mousePos = [pg.mouse.get_pos()[0], pg.mouse.get_pos()[1]]
+   return mousePos
 
 class BackGround():
 
@@ -30,18 +34,18 @@ class Block():
     air = pg.image.load("C:/Users/jerth/source/repos/GameSolution/2d survivging game/Images/block icons/air.png")
 
     #list variable for storing block data. structure is BlockMatrix[Horizontal Columns(uses y input)][Block in column(uses x input)][blockType]
-    BlockMatrix = [[[]for i in range(40)]for i in range(40)]
+    BlockMatrix = [[[]for i in range(20)]for i in range(20)]
 
     #sets every block to air
-    for y in range(40):
-        for x in range(40):
+    for y in range(20):
+        for x in range(20):
             BlockMatrix[y][x] = air
 
     
 
 
     #start of subclasses
-    class BlockType():
+    class Type():
 
             air = pg.image.load("C:/Users/jerth/source/repos/GameSolution/2d survivging game/Images/block icons/air.png")
             stone = None
@@ -50,15 +54,20 @@ class Block():
             sand = pg.image.load("C:/Users/jerth/source/repos/GameSolution/2d survivging game/Images/block icons/sand.png")
 
 
-    class BlockGrid():
+    class Grid():
 
         #inits the BlockGrid
-        def __init__():
-            print("")
+        def placeBlock(position,blockType):
+            #translate grid based input into screen cords
+            x = math.floor(position[0]/40)
+            y = math.floor(position[1]/40)
+
+        #set index of coordinates to 
+            Block.BlockMatrix[y][x] = blockType
 
 
 
-    class BlockRenderer():
+    class Renderer():
         
         air = pg.image.load("C:/Users/jerth/source/repos/GameSolution/2d survivging game/Images/block icons/air.png")
         stone = pg.image.load("C:/Users/jerth/source/repos/GameSolution/2d survivging game/Images/block icons/sand.png")
@@ -67,22 +76,26 @@ class Block():
         sand = pg.image.load("C:/Users/jerth/source/repos/GameSolution/2d survivging game/Images/block icons/sand.png")
 
         #takes coordinates from 0 to 20 on both axis
-        def drawBlock(surface,blockType,position):
+        def drawBlock(surface,blockType,position,skipCoordTranslation):
 
             #translate grid based input into screen cords
-            if position[0] >= 20:
-               x = 760
-            else:
-                x = position[0] * 40
-            if position[1] >= 20:
-                y = 760
-            else:
-                y = position[1] * 40
+            if skipCoordTranslation == False:
+                if position[0] >= 20:
+                   x = 760
+                else:
+                    x = position[0] * 40
+                if position[1] >= 20:
+                    y = 760
+                else:
+                    y = position[1] * 40
             #draw block
-            surface.blit(blockType,(x,y))
+            if skipCoordTranslation == True:
+                x = math.floor(position[0]/40)
+                x = x*40
+                y = math.floor(position[1]/40)
+                y= y*40
 
-            #set index of coordinates to 
-            Block.BlockMatrix[position[1]][position[0]] = blockType
+            surface.blit(blockType,(x,y))
 
 class Character():
     #things defined at top are used in many functions and subclasses
