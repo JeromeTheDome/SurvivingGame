@@ -121,7 +121,7 @@ class Block():
 class Character():
     global worldLength
     #things defined at top are used in many functions and subclasses
-    characterLocation = [50,19]
+    characterLocation = [worldLength/2,19]
     characterDrawLocation = [400,400]
 
     #character images
@@ -148,10 +148,10 @@ class Character():
         def CollisionCheck(direction ,custom = False,xOffset = 0,yOffset = 0):
             if custom == False:
                 if direction == "right":
-                    if(Block.BlockMatrix[int(Character.characterLocation[1])-2][int(Character.characterLocation[0])+8] != Block.Type.BlockType.air):
+                    if(Block.BlockMatrix[int(Character.characterLocation[1])-2][int(Character.characterLocation[0])+10] != Block.Type.BlockType.air):
                         return True
                 elif direction == "left":
-                    if(Block.BlockMatrix[int(Character.characterLocation[1])-2][int(Character.characterLocation[0])+12] != Block.Type.BlockType.air):
+                    if(Block.BlockMatrix[int(Character.characterLocation[1])-2][int(Character.characterLocation[0])+10] != Block.Type.BlockType.air):
                         return True
                 elif direction == "leftunder":
                     if(Block.BlockMatrix[int(Character.characterLocation[1])-2][int(Character.characterLocation[0])+9] != Block.Type.BlockType.air):
