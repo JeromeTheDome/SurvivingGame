@@ -14,7 +14,16 @@ make sand edible
 pg = pygame
 
 #default values
-blockType = Block.Type.dirt
+moving = False
+movingIter = 0
+
+blockType = Block.Type.BlockType.dirt
+
+characterImage = Character.Image.characterImage
+
+worldLength = 99
+
+croutched = False
 
 #screen scroll values
 scrollSpeed = 0
@@ -33,10 +42,13 @@ ForeGround.__init__(1)
 bgImage = BackGround.bgImage("./Images/background images/cloud.png")
 
 #sets up bottom squares
-for i in range(100):
-   Block.Grid.placeBlock((i,18),Block.Type.grass,True)
-for i in range(100):
-   Block.Grid.placeBlock((i,19),Block.Type.dirt,True)
+for i in range(worldLength):
+   Block.Grid.placeBlock((i,18),Block.Type.BlockType.grass,True)
+for i in range(worldLength):
+   if i% 2 == 0:
+       Block.Grid.placeBlock((i,19),Block.Type.BlockType.dirt,True)
+   else:
+       Block.Grid.placeBlock((i,19),Block.Type.BlockType.sand,True)
 
 
 
@@ -48,6 +60,12 @@ while True:
   keyboardInput = pg.key.get_pressed()
   pygame.mouse.set_cursor((8,8),(0,0),(0,0,0,0,0,0,0,0),(0,0,0,0,0,0,0,0))
   #START
+
+  #checks mouse input
+  if pg.mouse.get_pressed(3) == (True,False,False):
+    Block.Grid.placeBlock((ForeGround.getMousePos()[0]+Character.characterDrawLocation[0],ForeGround.getMousePos()[1]),blockType)
+  if pg.mouse.get_pressed(3) == (False,False,True):
+    Block.Grid.placeBlock((ForeGround.getMousePos()[0]+Character.characterDrawLocation[0],ForeGround.getMousePos()[1]),Block.Type.BlockType.air)
 
   """
   visual screen logic(background, screen scrolling ect.)
@@ -75,38 +93,30 @@ while True:
   block placement and properties logic
   """
   #grid matrix logic at top
+      
 
   #blockType logic
   if keyboardInput[pg.K_1]:
-    blockType = Block.Type.grass
+    blockType = Block.Type.BlockType.grass
   elif keyboardInput[pg.K_2]:
-    blockType = Block.Type.dirt
+    blockType = Block.Type.BlockType.dirt
   elif keyboardInput[pg.K_3]:
-      blockType = Block.Type.stone
+      blockType = Block.Type.BlockType.stone
   elif keyboardInput[pg.K_4]:
-    blockType = Block.Type.sand
+    blockType = Block.Type.BlockType.sand
 
-  #checks mouse input
-  if pg.mouse.get_pressed(3) == (True,False,False):
-    Block.Grid.placeBlock((ForeGround.getMousePos()[0]+Character.characterDrawLocation[0],ForeGround.getMousePos()[1]),blockType)
-  if pg.mouse.get_pressed(3) == (False,False,True):
-    Block.Grid.placeBlock((ForeGround.getMousePos()[0]+Character.characterDrawLocation[0],ForeGround.getMousePos()[1]),Block.Type.air)
 
 
 
   #block rendering logic is to be placed at the bottom
 
-  #places blocks
-  for y in range(0,20):
-        for x in range(0,99):
-          if Block.BlockMatrix[y][x] != Block.Type.air and (x > (Character.characterLocation[0])-10 and x < (Character.characterLocation[0])+20):
-              Block.Renderer.drawBlock(ForeGround.display,Block.BlockMatrix[y][x],(x-Character.characterLocation[0],y),False)
 
-  #removes blocks
+
+  #renders placed blocks
   for y in range(0,20):
-        for x in range(0,99):
-          if Block.BlockMatrix[y][x] != Block.Type.air and (x > (Character.characterLocation[0])-10 and x < (Character.characterLocation[0])+20):
-              Block.Renderer.drawBlock(ForeGround.display,Block.Type.air,(x,y),False)
+        for x in range(0,worldLength):
+          if (x > (Character.characterLocation[0])-10 and x < (Character.characterLocation[0])+20) and Block.BlockMatrix[y][x] != Block.Type.BlockType.air:
+              Block.Renderer.drawBlock(ForeGround.display,Block.Type.List[Block.BlockMatrix[y][x]],(x-Character.characterLocation[0],y),False)
 
  
 
@@ -114,18 +124,58 @@ while True:
   player logic
   """
 
-  #player movement Logic
-  #keyboard input
-  if keyboardInput[pg.K_a]:
-    Character.characterLocation[0] -= 1
-    Character.Pos.update()
+    #player movement Logic
 
-  elif keyboardInput[pg.K_d]:
-    Character.characterLocation[0] += 1
+  
+  if moving == False:
+    characterImage = Character.Render.SpritePick(croutched)
+
+  #keyboard input
+  if keyboardInput[pg.K_a] and Character.characterLocation[0] >= -8:
+    movingIter += 1
+    moving = True
+    doMove1 = True
+    for i in range(11,18):
+        if Character.Pos.CollisionCheck(None,True,-2,i):
+            doMove1 = False
+    if iterNum%5 == 0 and doMove1 == True:
+        Character.characterLocation[0] -= 1
     Character.Pos.update()
+    #animates legs
+    if movingIter>=0:
+      characterImage = Character.Image.leftLegUpImage
+    if movingIter >=25:
+        characterImage = Character.Image.rightLegUpImage
+        if movingIter >= 50:
+            movingIter = 0
+  elif keyboardInput[pg.K_d] and Character.characterLocation[0] <= 87:
+    movingIter += 1
+    moving = True
+    doMove = True
+    for i in range(11,18):
+        if Character.Pos.CollisionCheck(None,True,2,i):
+            doMove = False
+    if iterNum%5 == 0 and doMove == True:
+        Character.characterLocation[0] += 1
+    Character.Pos.update()
+    #animates legs
+    if movingIter >=0:
+      characterImage = Character.Image.leftLegUpImage
+    if movingIter>=25:
+        characterImage = Character.Image.rightLegUpImage
+        if movingIter >= 50:
+            movingIter = 0
+  else:
+       moving = False
+
+
+  if keyboardInput[pg.K_s] and moving == False:
+      croutched = True
+  else:
+      croutched = False
 
   #draw character at the end AFTER(DO NOT FORGOR💀) setting game logic for position
-  Character.Render.drawStill(ForeGround.display,Character.characterImage)
+  Character.Render.drawStillX(ForeGround.display,characterImage)
 
 
 
