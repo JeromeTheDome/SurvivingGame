@@ -165,7 +165,7 @@ class Character():
                 else:
                     return False
             elif custom == True:
-                if(Block.BlockMatrix[int(Character.characterLocation[1])-(20-yOffset)][int(Character.characterLocation[0])+(xOffset+10)] != Block.Type.BlockType.air):
+                if(Block.BlockMatrix[int(Character.characterLocation[1])-(yOffset+-8)][int(Character.characterLocation[0])+(xOffset+10)] != Block.Type.BlockType.air):
                     return True
                 else:
                     return False

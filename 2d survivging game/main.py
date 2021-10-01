@@ -125,8 +125,8 @@ while True:
   """
 
     #player movement Logic
-
-  
+  if Character.Pos.CollisionCheck("under") != True:
+      Character.characterLocation[1] += 1
   
   if moving == False:
     characterImage = Character.Render.SpritePick(croutched)
@@ -137,16 +137,14 @@ while True:
     movingIter += 1
     moving = True
     doMove1 = True
-    for i in range(11-int(19-Character.characterLocation[1]),18-int(19-Character.characterLocation[1])):
-        if Character.Pos.CollisionCheck(None,True,-2,i):
+    for i in range(11,18):
+        if Character.Pos.CollisionCheck(None,True,-1,i):
             doMove1 = False
     #updates player pos
-    if iterNum%5 == 0 and doMove1 == True:
-        Character.characterLocation[0] -= 1
+    if iterNum%1 == 0 and doMove1 == True:
+        Character.characterLocation[0] -= 0.1
         if Character.Pos.CollisionCheck("right") == True:
             Character.characterLocation[1] -= 1
-    if Character.Pos.CollisionCheck("under") != True:
-      Character.characterLocation[1] += 1
     Character.Pos.update()
     #animates legs
     if movingIter>=0:
@@ -161,16 +159,14 @@ while True:
     movingIter += 1
     moving = True
     doMove = True
-    for i in range(11-int(19-Character.characterLocation[1]),18-int(19-Character.characterLocation[1])):
-        if Character.Pos.CollisionCheck(None,True,2,i):
+    for i in range(11,18):
+        if Character.Pos.CollisionCheck(None,True,1,i):
             doMove = False
     #updates player pos
-    if iterNum%5 == 0 and doMove == True:
-        Character.characterLocation[0] += 1
+    if iterNum%1 == 0 and doMove == True:
+        Character.characterLocation[0] += 0.1
         if Character.Pos.CollisionCheck("left") == True:
             Character.characterLocation[1] -= 1
-    if Character.Pos.CollisionCheck("under") != True:
-      Character.characterLocation[1] += 1
     #animates legs
     if movingIter >=0:
       characterImage = Character.Image.leftLegUpImage
