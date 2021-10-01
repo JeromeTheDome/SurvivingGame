@@ -121,7 +121,7 @@ class Block():
 class Character():
     global worldLength
     #things defined at top are used in many functions and subclasses
-    characterLocation = [worldLength/2,19]
+    characterLocation = [50,19]
     characterDrawLocation = [400,400]
 
     #character images
@@ -142,7 +142,7 @@ class Character():
         #moves the character left or right
         def update(moveAmount = 1):
             Character.characterDrawLocation[0] = Character.characterLocation[0]*40
-            Character.characterDrawLocation[1] = Character.characterLocation[1]*40
+            Character.characterDrawLocation[1] = (Character.characterLocation[1]*40)-360
 
         #checks for collisions in a specified position relative to the player and returns true or false
         def CollisionCheck(direction ,custom = False,xOffset = 0,yOffset = 0):
@@ -158,6 +158,9 @@ class Character():
                         return True
                 elif direction == "rightunder":
                     if(Block.BlockMatrix[int(Character.characterLocation[1])-2][int(Character.characterLocation[0])+11] != Block.Type.BlockType.air):
+                        return True
+                elif direction == "under":
+                    if(Block.BlockMatrix[int(Character.characterLocation[1])-1][int(Character.characterLocation[0])+10] != Block.Type.BlockType.air):
                         return True
                 else:
                     return False
@@ -202,6 +205,6 @@ class Character():
             surface.blit(imageIn,(x,y))
 
         def drawStillX(surface,imageIn):
-            surface.blit(imageIn,(325,400))
+            surface.blit(imageIn,(325,Character.characterDrawLocation[1]))
 
          

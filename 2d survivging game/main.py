@@ -127,19 +127,26 @@ while True:
     #player movement Logic
 
   
+  
   if moving == False:
     characterImage = Character.Render.SpritePick(croutched)
 
   #keyboard input
+  #move left
   if keyboardInput[pg.K_a] and Character.characterLocation[0] >= -8:
     movingIter += 1
     moving = True
     doMove1 = True
-    for i in range(11,18):
+    for i in range(11-int(19-Character.characterLocation[1]),18-int(19-Character.characterLocation[1])):
         if Character.Pos.CollisionCheck(None,True,-2,i):
             doMove1 = False
+    #updates player pos
     if iterNum%5 == 0 and doMove1 == True:
         Character.characterLocation[0] -= 1
+        if Character.Pos.CollisionCheck("right") == True:
+            Character.characterLocation[1] -= 1
+    if Character.Pos.CollisionCheck("under") != True:
+      Character.characterLocation[1] += 1
     Character.Pos.update()
     #animates legs
     if movingIter>=0:
@@ -148,16 +155,22 @@ while True:
         characterImage = Character.Image.rightLegUpImage
         if movingIter >= 50:
             movingIter = 0
+
+    #move right
   elif keyboardInput[pg.K_d] and Character.characterLocation[0] <= 87:
     movingIter += 1
     moving = True
     doMove = True
-    for i in range(11,18):
+    for i in range(11-int(19-Character.characterLocation[1]),18-int(19-Character.characterLocation[1])):
         if Character.Pos.CollisionCheck(None,True,2,i):
             doMove = False
+    #updates player pos
     if iterNum%5 == 0 and doMove == True:
         Character.characterLocation[0] += 1
-    Character.Pos.update()
+        if Character.Pos.CollisionCheck("left") == True:
+            Character.characterLocation[1] -= 1
+    if Character.Pos.CollisionCheck("under") != True:
+      Character.characterLocation[1] += 1
     #animates legs
     if movingIter >=0:
       characterImage = Character.Image.leftLegUpImage
@@ -165,6 +178,7 @@ while True:
         characterImage = Character.Image.rightLegUpImage
         if movingIter >= 50:
             movingIter = 0
+
   else:
        moving = False
 
@@ -173,7 +187,7 @@ while True:
       croutched = True
   else:
       croutched = False
-
+  Character.Pos.update()
   #draw character at the end AFTER(DO NOT FORGOR💀) setting game logic for position
   Character.Render.drawStillX(ForeGround.display,characterImage)
 
