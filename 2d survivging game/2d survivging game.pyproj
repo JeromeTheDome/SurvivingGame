@@ -12,7 +12,7 @@
     <Name>2d survivging game</Name>
     <RootNamespace>2d survivging game</RootNamespace>
     <IsWindowsApplication>False</IsWindowsApplication>
-    <InterpreterId>MSBuild|Python 3.7|$(MSBuildProjectFullPath)</InterpreterId>
+    <InterpreterId>MSBuild|python(workies)|$(MSBuildProjectFullPath)</InterpreterId>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DebugSymbols>true</DebugSymbols>
@@ -40,6 +40,15 @@
       <Id>Python 3.7</Id>
       <Version>3.7</Version>
       <Description>Python 3.7 (Python 3.7 (64-bit))</Description>
+      <InterpreterPath>Scripts\python.exe</InterpreterPath>
+      <WindowsInterpreterPath>Scripts\pythonw.exe</WindowsInterpreterPath>
+      <PathEnvironmentVariable>PYTHONPATH</PathEnvironmentVariable>
+      <Architecture>X64</Architecture>
+    </Interpreter>
+    <Interpreter Include="python(workies)\">
+      <Id>python(workies)</Id>
+      <Version>3.7</Version>
+      <Description>python(workies) (Python 3.7 (64-bit))</Description>
       <InterpreterPath>Scripts\python.exe</InterpreterPath>
       <WindowsInterpreterPath>Scripts\pythonw.exe</WindowsInterpreterPath>
       <PathEnvironmentVariable>PYTHONPATH</PathEnvironmentVariable>

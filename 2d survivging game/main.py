@@ -25,7 +25,7 @@ jumpIterNum = 0
 
 blockSize = 32
 numBlocks = int(800 / blockSize)
-worldHeight = 260
+worldHeight = 1000
 worldLength = 1000
 
 moving = False
@@ -54,20 +54,10 @@ bgImage = BackGround.bgImage("./Images/background images/cloud.png")
 
 #sets up bottom squares
 for i in range(worldLength):
-   Block.Grid.placeBlock((i,37),Block.Type.BlockType.grass,True)
+   Block.Grid.placeBlock((i,500),Block.Type.BlockType.grass,True)
 for i in range(worldLength):
-       Block.Grid.placeBlock((i,38),Block.Type.BlockType.dirt,True)
-       Block.Grid.placeBlock((i,39),Block.Type.BlockType.dirt,True)
-       Block.Grid.placeBlock((i,40),Block.Type.BlockType.dirt,True)
-       Block.Grid.placeBlock((i,41),Block.Type.BlockType.dirt,True)
-       Block.Grid.placeBlock((i,42),Block.Type.BlockType.dirt,True)
-       Block.Grid.placeBlock((i,43),Block.Type.BlockType.dirt,True)
-       Block.Grid.placeBlock((i,44),Block.Type.BlockType.dirt,True)
-       Block.Grid.placeBlock((i,45),Block.Type.BlockType.dirt,True)
-       Block.Grid.placeBlock((i,46),Block.Type.BlockType.dirt,True)
-       Block.Grid.placeBlock((i,47),Block.Type.BlockType.dirt,True)
-       Block.Grid.placeBlock((i,48),Block.Type.BlockType.dirt,True)
-       Block.Grid.placeBlock((i,49),Block.Type.BlockType.dirt,True)
+    for g in range(1,500):
+       Block.Grid.placeBlock((i,500 + g),Block.Type.BlockType.dirt,True)
 
 
 
@@ -76,6 +66,9 @@ for i in range(worldLength):
 #main game loop
 while True:
   #gets pygame events
+  print('x',Character.characterLocation[0])
+  print('y',Character.characterLocation[1])
+
   ev = pg.event.get()
   keyboardInput = pg.key.get_pressed()
   pygame.mouse.set_cursor((8,8),(0,0),(0,0,0,0,0,0,0,0),(0,0,0,0,0,0,0,0))
@@ -124,6 +117,8 @@ while True:
       blockType = Block.Type.BlockType.stone
   elif keyboardInput[pg.K_4]:
     blockType = Block.Type.BlockType.sand
+  elif keyboardInput[pg.K_5]:
+    blockType = Block.Type.BlockType.wood
 
 
 
@@ -136,7 +131,7 @@ while True:
   for y in range(math.floor(Character.characterLocation[1]-20),math.floor(Character.characterLocation[1]+7)):
         for x in range(math.floor(Character.characterLocation[0]),math.floor(Character.characterLocation[0]+26)): 
              #checks if block attempting to be drawn is outside of view distance
-              Block.Renderer.drawBlock(ForeGround.display  ,Block.Type.List[Block.BlockMatrix[y][x]],(x-Character.characterLocation[0],(y-Character.characterLocation[1])+19),False)
+             Block.Renderer.drawBlock(ForeGround.display  ,Block.Type.List[Block.BlockMatrix[y][x]],(x-Character.characterLocation[0],(y-Character.characterLocation[1])+19),False)
 
  
 
@@ -171,7 +166,9 @@ while True:
         jumpIterNum = 0
 
     #gravity
-  if Character.Pos.CollisionCheck("under",False,1) != True and jump != True:
+  if Character.Pos.CollisionCheck("under",False,1) != True and jump != True and direction == 'right' and Character.characterLocation[1] < 900:
+      Character.characterLocation[1] += 0.5
+  if Character.Pos.CollisionCheck("under",False,2) != True and jump != True and direction == 'left' and Character.characterLocation[1] < 900:
       Character.characterLocation[1] += 0.5
 
   #keyboard input
@@ -186,11 +183,11 @@ while True:
     doMove1 = True
     direction = "left"
     #checks for player collisions with adjacent blocks
-    if Character.Pos.CollisionCheck("left",False,-1,-1):
+    if Character.Pos.CollisionCheck("left",False,-1,-1) or Character.characterLocation[0] < 20:
             doMove1 = False
     #updates player pos
     if doMove1 == True:
-        if Character.Pos.CollisionCheck("left",False,-1,0) == True and iterNum%3 == 0:
+        if Character.Pos.CollisionCheck("left",False,-1,0) == True and iterNum%3 == 0 and Character.Pos.CollisionCheck('above',False) != True:
             Character.characterLocation[1] -= 1
             Character.characterLocation[0] -= 1
         elif Character.Pos.CollisionCheck("left",False,-1,0) != True:
@@ -211,11 +208,11 @@ while True:
     doMove = True
     direction = "right"
     #checks for player collisions with adjacent blocks
-    if Character.Pos.CollisionCheck("right",False,2,-1):
+    if Character.Pos.CollisionCheck("right",False,2,-1) or Character.characterLocation[0] > 950:
             doMove = False    
     #updates player pos
     if doMove == True:
-        if Character.Pos.CollisionCheck("right",False,2,0) == True and iterNum%3 == 0:
+        if Character.Pos.CollisionCheck("right",False,2,0) == True and iterNum%3 == 0 and Character.Pos.CollisionCheck('above',False) != True:
             Character.characterLocation[1] -= 1
             Character.characterLocation[0] += 1
         elif Character.Pos.CollisionCheck("right",False,2,0) != True:

@@ -49,7 +49,8 @@ class Block():
             dirt = 2
             grass = 3
             sand = 4
-            lastentry = 5
+            wood = 5
+            lastentry = 6
         
         List = [pg.image] * BlockType.lastentry
         List[BlockType.air] = pg.image.load("./Images/block icons/air.png")
@@ -57,6 +58,7 @@ class Block():
         List[BlockType.dirt] = pg.image.load("./Images/block icons/dirt.png")
         List[BlockType.grass] = pg.image.load("./Images/block icons/grass.png")
         List[BlockType.sand] = pg.image.load("./Images/block icons/sand.png")
+        List[BlockType.wood] = pg.image.load("./Images/block icons/wood.png")
 
     global worldLength
     global numBlocks
@@ -67,10 +69,10 @@ class Block():
     air = pg.image.load("./Images/block icons/air.png")
 
     #list variable for storing block data. structure is BlockMatrix[Horizontal Columns(uses y input)][Block in column(uses x input)][blockType]
-    BlockMatrix = [[[]for i in range(worldLength +1)]for i in range(worldHeight*2)]
+    BlockMatrix = [[[]for i in range(worldLength +1)]for i in range(worldHeight)]
 
     #sets every block to air
-    for y in range(worldHeight*2):
+    for y in range(worldHeight):
         for x in range(worldLength):
             BlockMatrix[y][x] = Type.BlockType.air
 
@@ -107,12 +109,6 @@ class Block():
 
     class Renderer():
         global blockSize
-        air = pg.image.load("./Images/block icons/air.png")
-        stone = pg.image.load("./Images/block icons/stone.png")
-        dirt = pg.image.load("./Images/block icons/dirt.png")
-        grass = pg.image.load("./Images/block icons/grass.png")
-        sand = pg.image.load("./Images/block icons/sand.png")
-
         #takes coordinates from 0 to 20 on both axis
         def drawBlock(surface,blockType,position,skipCoordTranslation):
 
@@ -132,7 +128,7 @@ class Block():
 class Character():
     global worldLength
     #things defined at top are used in many functions and subclasses
-    characterLocation = [(worldLength/2),38]
+    characterLocation = [(worldLength/2),501]
     characterDrawLocation = [400,400]
 
     #character images
@@ -181,6 +177,9 @@ class Character():
                         return True
                 elif direction == "under":
                     if(Block.BlockMatrix[math.floor(Character.characterLocation[1])-1+yOffset][math.floor(Character.characterLocation[0])+11+xOffset] != Block.Type.BlockType.air):
+                        return True
+                elif direction == "above":
+                    if (Block.BlockMatrix[math.floor(Character.characterLocation[1])-4+yOffset][math.floor(Character.characterLocation[0])+12+xOffset] != Block.Type.BlockType.air):
                         return True
                 else:
                     return False
