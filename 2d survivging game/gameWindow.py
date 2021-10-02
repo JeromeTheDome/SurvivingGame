@@ -132,7 +132,7 @@ class Block():
 class Character():
     global worldLength
     #things defined at top are used in many functions and subclasses
-    characterLocation = [worldLength/2,38]
+    characterLocation = [(worldLength/2),38]
     characterDrawLocation = [400,400]
 
     #character images

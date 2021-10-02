@@ -11,7 +11,8 @@ to do list:
 make sand edible
 """
 """
-notes: player freezes when head touches top of world because the "block" at that coord does not = air
+notes: 
+make seperate gravity loop for when the player is moving that checks the players next coord for air and then moves them down
 """
 
 pg = pygame
@@ -148,23 +149,29 @@ while True:
       if jumpIterNum < 5:
         Character.characterLocation[1]-= 0.5
         jumpIterNum += 1
+        if Character.Pos.CollisionCheck("under",False,1) == True:
+            jumpIterNum = 14
       elif  5 <= jumpIterNum < 7:
         Character.characterLocation[1]-= 0.08
         jumpIterNum += 1
+        if Character.Pos.CollisionCheck("under",False,1) == True:
+            jumpIterNum = 14
       elif 7 <= jumpIterNum < 9:
         Character.characterLocation[1]+= 0.08
         jumpIterNum += 1
+        if Character.Pos.CollisionCheck("under",False,1) == True:
+            jumpIterNum = 14
       elif 9 <= jumpIterNum < 14:
         Character.characterLocation[1]+= 0.5
         jumpIterNum += 1
+        if Character.Pos.CollisionCheck("under",False,1) == True:
+            jumpIterNum = 14
       elif jumpIterNum >= 14:
         jump = False
         jumpIterNum = 0
 
     #gravity
-  if Character.Pos.CollisionCheck("under",False,2) != True and jump != True and direction == 'right' and moving == True:
-      Character.characterLocation[1] += 0.5
-  elif Character.Pos.CollisionCheck("under",False,1) != True and jump != True and direction == 'left' and moving == True:
+  if Character.Pos.CollisionCheck("under",False,1) != True and jump != True:
       Character.characterLocation[1] += 0.5
 
   #keyboard input
@@ -204,7 +211,7 @@ while True:
     doMove = True
     direction = "right"
     #checks for player collisions with adjacent blocks
-    if Character.Pos.CollisionCheck("right",False,1,-1):
+    if Character.Pos.CollisionCheck("right",False,2,-1):
             doMove = False    
     #updates player pos
     if doMove == True:
