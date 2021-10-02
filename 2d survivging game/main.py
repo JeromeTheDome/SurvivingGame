@@ -10,19 +10,29 @@ from gameWindow import Character
 to do list:
 make sand edible
 """
+"""
+notes: player freezes when head touches top of world because the "block" at that coord does not = air
+"""
 
 pg = pygame
 
 #default values
+direction = "right"
+
+jump = False
+jumpIterNum = 0
+
+blockSize = 32
+numBlocks = int(800 / blockSize)
+worldHeight = 260
+worldLength = 1000
+
 moving = False
-movingIter = 0
+movingIter = 1
 
 blockType = Block.Type.BlockType.dirt
 
-characterImage = Character.Image.characterImage
-
-worldLength = 99
-
+characterImage = Character.Image.characterStillRight
 croutched = False
 
 #screen scroll values
@@ -43,12 +53,21 @@ bgImage = BackGround.bgImage("./Images/background images/cloud.png")
 
 #sets up bottom squares
 for i in range(worldLength):
-   Block.Grid.placeBlock((i,18),Block.Type.BlockType.grass,True)
+   Block.Grid.placeBlock((i,37),Block.Type.BlockType.grass,True)
 for i in range(worldLength):
-   if i% 2 == 0:
-       Block.Grid.placeBlock((i,19),Block.Type.BlockType.dirt,True)
-   else:
-       Block.Grid.placeBlock((i,19),Block.Type.BlockType.sand,True)
+       Block.Grid.placeBlock((i,38),Block.Type.BlockType.dirt,True)
+       Block.Grid.placeBlock((i,39),Block.Type.BlockType.dirt,True)
+       Block.Grid.placeBlock((i,40),Block.Type.BlockType.dirt,True)
+       Block.Grid.placeBlock((i,41),Block.Type.BlockType.dirt,True)
+       Block.Grid.placeBlock((i,42),Block.Type.BlockType.dirt,True)
+       Block.Grid.placeBlock((i,43),Block.Type.BlockType.dirt,True)
+       Block.Grid.placeBlock((i,44),Block.Type.BlockType.dirt,True)
+       Block.Grid.placeBlock((i,45),Block.Type.BlockType.dirt,True)
+       Block.Grid.placeBlock((i,46),Block.Type.BlockType.dirt,True)
+       Block.Grid.placeBlock((i,47),Block.Type.BlockType.dirt,True)
+       Block.Grid.placeBlock((i,48),Block.Type.BlockType.dirt,True)
+       Block.Grid.placeBlock((i,49),Block.Type.BlockType.dirt,True)
+
 
 
 
@@ -63,9 +82,9 @@ while True:
 
   #checks mouse input
   if pg.mouse.get_pressed(3) == (True,False,False):
-    Block.Grid.placeBlock((ForeGround.getMousePos()[0]+Character.characterDrawLocation[0],ForeGround.getMousePos()[1]),blockType)
+    Block.Grid.placeBlock((ForeGround.getMousePos()[0]+Character.characterDrawLocation[0],  (ForeGround.getMousePos()[1]+Character.characterDrawLocation[1])-600),blockType)
   if pg.mouse.get_pressed(3) == (False,False,True):
-    Block.Grid.placeBlock((ForeGround.getMousePos()[0]+Character.characterDrawLocation[0],ForeGround.getMousePos()[1]),Block.Type.BlockType.air)
+    Block.Grid.placeBlock((ForeGround.getMousePos()[0]+Character.characterDrawLocation[0], (ForeGround.getMousePos()[1]+Character.characterDrawLocation[1])-600), Block.Type.BlockType.air)
 
   """
   visual screen logic(background, screen scrolling ect.)
@@ -113,10 +132,10 @@ while True:
 
 
   #renders placed blocks
-  for y in range(0,20):
-        for x in range(0,worldLength):
-          if (x > (Character.characterLocation[0])-10 and x < (Character.characterLocation[0])+20) and Block.BlockMatrix[y][x] != Block.Type.BlockType.air:
-              Block.Renderer.drawBlock(ForeGround.display,Block.Type.List[Block.BlockMatrix[y][x]],(x-Character.characterLocation[0],y),False)
+  for y in range(math.floor(Character.characterLocation[1]-20),math.floor(Character.characterLocation[1]+7)):
+        for x in range(math.floor(Character.characterLocation[0]),math.floor(Character.characterLocation[0]+26)): 
+             #checks if block attempting to be drawn is outside of view distance
+              Block.Renderer.drawBlock(ForeGround.display  ,Block.Type.List[Block.BlockMatrix[y][x]],(x-Character.characterLocation[0],(y-Character.characterLocation[1])+19),False)
 
  
 
@@ -124,59 +143,92 @@ while True:
   player logic
   """
 
-    #player movement Logic
-  if Character.Pos.CollisionCheck("under") != True:
-      Character.characterLocation[1] += 1
-  
-  if moving == False:
-    characterImage = Character.Render.SpritePick(croutched)
+
+  if jump == True:
+      if jumpIterNum < 5:
+        Character.characterLocation[1]-= 0.5
+        jumpIterNum += 1
+      elif  5 <= jumpIterNum < 7:
+        Character.characterLocation[1]-= 0.08
+        jumpIterNum += 1
+      elif 7 <= jumpIterNum < 9:
+        Character.characterLocation[1]+= 0.08
+        jumpIterNum += 1
+      elif 9 <= jumpIterNum < 14:
+        Character.characterLocation[1]+= 0.5
+        jumpIterNum += 1
+      elif jumpIterNum >= 14:
+        jump = False
+        jumpIterNum = 0
+
+    #gravity
+  if Character.Pos.CollisionCheck("under",False,2) != True and jump != True and direction == 'right' and moving == True:
+      Character.characterLocation[1] += 0.5
+  elif Character.Pos.CollisionCheck("under",False,1) != True and jump != True and direction == 'left' and moving == True:
+      Character.characterLocation[1] += 0.5
 
   #keyboard input
+
+  if keyboardInput[pg.K_SPACE]:
+    if Character.Pos.CollisionCheck("under",False,1) == True:
+        jump = True
+
   #move left
-  if keyboardInput[pg.K_a] and Character.characterLocation[0] >= -8:
-    movingIter += 1
+  if keyboardInput[pg.K_a]:
     moving = True
     doMove1 = True
-    for i in range(11,18):
-        if Character.Pos.CollisionCheck(None,True,-1,i):
+    direction = "left"
+    #checks for player collisions with adjacent blocks
+    if Character.Pos.CollisionCheck("left",False,-1,-1):
             doMove1 = False
     #updates player pos
-    if iterNum%1 == 0 and doMove1 == True:
-        Character.characterLocation[0] -= 0.1
-        if Character.Pos.CollisionCheck("right") == True:
+    if doMove1 == True:
+        if Character.Pos.CollisionCheck("left",False,-1,0) == True and iterNum%3 == 0:
             Character.characterLocation[1] -= 1
+            Character.characterLocation[0] -= 1
+        elif Character.Pos.CollisionCheck("left",False,-1,0) != True:
+            Character.characterLocation[0] -= 0.3
     Character.Pos.update()
-    #animates legs
-    if movingIter>=0:
-      characterImage = Character.Image.leftLegUpImage
-    if movingIter >=25:
-        characterImage = Character.Image.rightLegUpImage
-        if movingIter >= 50:
-            movingIter = 0
+    #decides what animation to use for the character
+    if moving == True and iterNum%4 == 0:
+        characterImage = Character.Render.SpritePick(direction,movingIter)
+        if movingIter >= 4:
+            movingIter = 1
+        else:
+            movingIter+= 1
+
 
     #move right
-  elif keyboardInput[pg.K_d] and Character.characterLocation[0] <= 87:
-    movingIter += 1
+  elif keyboardInput[pg.K_d]:
     moving = True
     doMove = True
-    for i in range(11,18):
-        if Character.Pos.CollisionCheck(None,True,1,i):
-            doMove = False
+    direction = "right"
+    #checks for player collisions with adjacent blocks
+    if Character.Pos.CollisionCheck("right",False,1,-1):
+            doMove = False    
     #updates player pos
-    if iterNum%1 == 0 and doMove == True:
-        Character.characterLocation[0] += 0.1
-        if Character.Pos.CollisionCheck("left") == True:
+    if doMove == True:
+        if Character.Pos.CollisionCheck("right",False,2,0) == True and iterNum%3 == 0:
             Character.characterLocation[1] -= 1
-    #animates legs
-    if movingIter >=0:
-      characterImage = Character.Image.leftLegUpImage
-    if movingIter>=25:
-        characterImage = Character.Image.rightLegUpImage
-        if movingIter >= 50:
-            movingIter = 0
+            Character.characterLocation[0] += 1
+        elif Character.Pos.CollisionCheck("right",False,2,0) != True:
+            Character.characterLocation[0] += 0.3
+    #decides what animation to use for the character
+    if moving == True and iterNum%4 == 0:
+        characterImage = Character.Render.SpritePick(direction,movingIter)
+        if movingIter >= 4:
+            movingIter = 1
+        else:
+            movingIter+= 1
+
 
   else:
        moving = False
+       if direction == "right":
+        characterImage = Character.Image.characterStillRight
+       elif direction == "left":
+        characterImage = Character.Image.characterStillLeft
+       movingIter = 1
 
 
   if keyboardInput[pg.K_s] and moving == False:

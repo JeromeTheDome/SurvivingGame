@@ -6,7 +6,15 @@ pg = pygame
 
 programEnv = "replit"
 
-worldLength = 99
+worldLength = 1000
+worldHeight = 1000
+
+yCharacterRenderOffset = 72
+
+
+#blockSize used for rendering
+blockSize = 32
+numBlocks = int(800/blockSize)
 
 class ForeGround():
   cursorIcon = pg.image.load("./Images/background images/cursor.png")
@@ -51,16 +59,18 @@ class Block():
         List[BlockType.sand] = pg.image.load("./Images/block icons/sand.png")
 
     global worldLength
+    global numBlocks
+    global worldHeight
     #all of these are defined at the top as many subclasses of block rely on them
 
     #defines air for default block type
     air = pg.image.load("./Images/block icons/air.png")
 
     #list variable for storing block data. structure is BlockMatrix[Horizontal Columns(uses y input)][Block in column(uses x input)][blockType]
-    BlockMatrix = [[[]for i in range(worldLength +1)]for i in range(20)]
+    BlockMatrix = [[[]for i in range(worldLength +1)]for i in range(worldHeight*2)]
 
     #sets every block to air
-    for y in range(20):
+    for y in range(worldHeight*2):
         for x in range(worldLength):
             BlockMatrix[y][x] = Type.BlockType.air
 
@@ -68,18 +78,19 @@ class Block():
 
     class Grid():
         global worldLength
+        global blockSize
 
         #inits the BlockGrid
         def placeBlock(position,blockType,skipRowTranslation = False):
             #translate grid based input into screen cords
             if skipRowTranslation != True:
-                x = math.floor(position[0]/40)
-                y = math.floor(position[1]/40)
+                x = math.floor(position[0]/blockSize)
+                y = math.floor(position[1]/blockSize)
             else:
                 x = position[0]
                 y = position[1]
-            if x > 99:
-                x = 99
+            if x > worldLength:
+                x = worldLength
             Block.BlockMatrix[y][x] = blockType
         #shfits coordinate data for block matrix
         def shiftBlockMatrix(rangeStartCoord,rangeEndCoord):
@@ -95,7 +106,7 @@ class Block():
 
 
     class Renderer():
-        
+        global blockSize
         air = pg.image.load("./Images/block icons/air.png")
         stone = pg.image.load("./Images/block icons/stone.png")
         dirt = pg.image.load("./Images/block icons/dirt.png")
@@ -107,25 +118,32 @@ class Block():
 
             #translate grid based input into screen cords
             if skipCoordTranslation == False:
-                x = position[0] * 40
-                y = position[1] * 40
+                x = position[0] * blockSize
+                y = position[1] * blockSize
             #draw block
             if skipCoordTranslation == True:
-                x = math.floor(position[0]/40)
-                x = x*40
-                y = math.floor(position[1]/40)
-                y= y*40
+                x = math.floor(position[0]/blockSize)
+                x = x*blockSize
+                y = math.floor(position[1]/blockSize)
+                y= y*blockSize
 
             surface.blit(blockType,(x,y))
 
 class Character():
     global worldLength
     #things defined at top are used in many functions and subclasses
-    characterLocation = [worldLength/2,19]
+    characterLocation = [worldLength/2,38]
     characterDrawLocation = [400,400]
 
     #character images
     class Image():
+        global blockSize
+        #character still images
+        characterStillRight = pg.image.load("./Images/Character Icons/stillRight.png")
+        characterStillLeft = pg.image.load("./Images/Character Icons/stillLeft.png")
+        """
+
+        debug icons are commented out
         characterImage = pg.image.load("./Images/Character Icons/john.png")
         rightLegUpImage = pg.image.load("./Images/Character Icons/johnRightFoot.png")
         leftLegUpImage = pg.image.load("./Images/Character Icons/johnLeftFoot.png")
@@ -136,75 +154,59 @@ class Character():
         rightLegUpCroutchedImage = pg.image.load("./Images/Character Icons/johnCroutchedRightFoot.png")
         leftLegUpCroutchedImage = pg.image.load("./Images/Character Icons/johnCroutchedLeftFoot.png")
         bothLegsUpCroutchedImage = pg.image.load("./Images/Character Icons/johnCroutchedBothFeet.png")
-
+        """
     class Pos():
 
         #moves the character left or right
         def update(moveAmount = 1):
-            Character.characterDrawLocation[0] = Character.characterLocation[0]*40
-            Character.characterDrawLocation[1] = (Character.characterLocation[1]*40)-360
+            Character.characterDrawLocation[0] = Character.characterLocation[0]*blockSize
+            Character.characterDrawLocation[1] = (Character.characterLocation[1]*blockSize)
 
         #checks for collisions in a specified position relative to the player and returns true or false
+        
+        #hard coding offsets dont forget to make them variable later
         def CollisionCheck(direction ,custom = False,xOffset = 0,yOffset = 0):
             if custom == False:
                 if direction == "right":
-                    if(Block.BlockMatrix[int(Character.characterLocation[1])-2][int(Character.characterLocation[0])+10] != Block.Type.BlockType.air):
+                    if(Block.BlockMatrix[math.floor(Character.characterLocation[1])-2+yOffset][math.floor(Character.characterLocation[0])+11+xOffset] != Block.Type.BlockType.air):
                         return True
                 elif direction == "left":
-                    if(Block.BlockMatrix[int(Character.characterLocation[1])-2][int(Character.characterLocation[0])+10] != Block.Type.BlockType.air):
+                    if(Block.BlockMatrix[math.floor(Character.characterLocation[1])-2+yOffset][math.floor(Character.characterLocation[0])+13+xOffset] != Block.Type.BlockType.air):
                         return True
                 elif direction == "leftunder":
-                    if(Block.BlockMatrix[int(Character.characterLocation[1])-2][int(Character.characterLocation[0])+9] != Block.Type.BlockType.air):
+                    if(Block.BlockMatrix[math.floor(Character.characterLocation[1])-2+yOffset][math.floor(Character.characterLocation[0])+11+xOffset] != Block.Type.BlockType.air):
                         return True
                 elif direction == "rightunder":
-                    if(Block.BlockMatrix[int(Character.characterLocation[1])-2][int(Character.characterLocation[0])+11] != Block.Type.BlockType.air):
+                    if(Block.BlockMatrix[math.floor(Character.characterLocation[1])-2+yOffset][math.floor(Character.characterLocation[0])+13+xOffset] != Block.Type.BlockType.air):
                         return True
                 elif direction == "under":
-                    if(Block.BlockMatrix[int(Character.characterLocation[1])-1][int(Character.characterLocation[0])+10] != Block.Type.BlockType.air):
+                    if(Block.BlockMatrix[math.floor(Character.characterLocation[1])-1+yOffset][math.floor(Character.characterLocation[0])+11+xOffset] != Block.Type.BlockType.air):
                         return True
                 else:
                     return False
             elif custom == True:
-                if(Block.BlockMatrix[int(Character.characterLocation[1])-(yOffset+-8)][int(Character.characterLocation[0])+(xOffset+10)] != Block.Type.BlockType.air):
+                if(Block.BlockMatrix[math.floor(Character.characterLocation[1])-(yOffset+-8)][math.floor(Character.characterLocation[0])+(xOffset+12)] != Block.Type.BlockType.air):
                     return True
                 else:
                     return False
     class Render():
-
-        def SpritePick(Croutched):
-            #if elif statement used to set sprites under certian conditions
-          if Character.Pos.CollisionCheck("rightunder") == None and Character.Pos.CollisionCheck("leftunder") == None: #sets default image if no blocks collide with legs
-            if Croutched == False:
-                return Character.Image.characterImage
-            elif Croutched == True:
-                return Character.Image.croutchedImage
-
-          if Character.Pos.CollisionCheck("leftunder") == True and Character.Pos.CollisionCheck("rightunder") == True: #sets image for if both legs collide with blocks
-              if Croutched == False:
-                return Character.Image.bothLegsUpImage
-              elif Croutched == True:
-                return Character.Image.bothLegsUpCroutchedImage
-
-          elif Character.Pos.CollisionCheck("rightunder") == True:
-              if Croutched == False:
-                return Character.Image.rightLegUpImage
-              elif Croutched == True:
-                return Character.Image.rightLegUpCroutchedImage
-
-          elif Character.Pos.CollisionCheck("leftunder") == True:
-              if Croutched == False:
-                return Character.Image.leftLegUpImage
-              elif Croutched == True:
-                return Character.Image.leftLegUpCroutchedImage
+        global yCharacterRenderOffset
+        global blockSize
+        def SpritePick(Direction,AnimationFrameIter):
+            #used to decide which frame to display for character 
+            if Direction == "left":
+                return pg.image.load("./Images/Character Icons/movingLeftFrame"+str(AnimationFrameIter)+".png")
+            elif Direction == "right":
+                return pg.image.load("./Images/Character Icons/movingRightFrame"+str(AnimationFrameIter)+".png")
 
 
         def draw(surface,imageIn,x,y):
         #renders the character still
-            x = x * 40
-            y = y * 40
+            x = x * blockSize
+            y = y * blockSize
             surface.blit(imageIn,(x,y))
 
         def drawStillX(surface,imageIn):
-            surface.blit(imageIn,(325,Character.characterDrawLocation[1]))
+            surface.blit(imageIn,(383,505))
 
-         
+  
