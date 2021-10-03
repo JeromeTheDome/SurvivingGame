@@ -66,9 +66,6 @@ for i in range(worldLength):
 #main game loop
 while True:
   #gets pygame events
-  print('x',Character.characterLocation[0])
-  print('y',Character.characterLocation[1])
-
   ev = pg.event.get()
   keyboardInput = pg.key.get_pressed()
   pygame.mouse.set_cursor((8,8),(0,0),(0,0,0,0,0,0,0,0),(0,0,0,0,0,0,0,0))
@@ -131,7 +128,7 @@ while True:
   for y in range(math.floor(Character.characterLocation[1]-20),math.floor(Character.characterLocation[1]+7)):
         for x in range(math.floor(Character.characterLocation[0]),math.floor(Character.characterLocation[0]+26)): 
              #checks if block attempting to be drawn is outside of view distance
-             Block.Renderer.drawBlock(ForeGround.display  ,Block.Type.List[Block.BlockMatrix[y][x]],(x-Character.characterLocation[0],(y-Character.characterLocation[1])+19),False)
+             Block.Renderer.drawBlock(ForeGround.display,Block.Type.List[Block.BlockMatrix[y][x]],(x-Character.characterLocation[0],(y-Character.characterLocation[1])+19),False)
 
  
 
@@ -249,6 +246,8 @@ while True:
   """
   any ending functions such as iteration numbers or updates of that kind or misc renderings
   """
+
+  print(Character.Pos.newCollisionCheck(Character.characterLocation[0]+14,Character.characterLocation[1]+17,1))
 
   #draws cursor with block where player cursor is
   ForeGround.display.blit(ForeGround.cursorIcon,(ForeGround.getMousePos()[0]-12,ForeGround.getMousePos()[1]-9))
