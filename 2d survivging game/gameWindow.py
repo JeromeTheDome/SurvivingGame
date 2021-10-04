@@ -26,6 +26,7 @@ class ForeGround():
   def getMousePos():
    mousePos = [pg.mouse.get_pos()[0], pg.mouse.get_pos()[1]]
    return mousePos
+         
 
 class BackGround():
 
@@ -82,7 +83,17 @@ class Block():
         global worldLength
         global blockSize
 
+        blockBreakingPos = [0,0]
+
         #inits the BlockGrid
+
+        def SetBlockBreakCoord(position):
+            x = math.floor(position[0]/blockSize)
+            y = math.floor(position[1]/blockSize)
+
+            Block.Grid.blockBreakingPos[0] = x
+            Block.Grid.blockBreakingPos[1] = y
+
         def placeBlock(position,blockType,skipRowTranslation = False):
             #translate grid based input into screen cords
             if skipRowTranslation != True:
@@ -91,21 +102,24 @@ class Block():
             else:
                 x = position[0]
                 y = position[1]
-            if x > worldLength:
-                x = worldLength
+            if Block.BlockMatrix[y][x] == Block.Type.BlockType.air:
+                Block.BlockMatrix[y][x] = blockType
+        def breakBlock(position,blockType,skipRowTranslation = False):
+            #translate grid based input into screen cords
+            if skipRowTranslation != True:
+                x = math.floor(position[0]/blockSize)
+                y = math.floor(position[1]/blockSize)
+            else:
+                x = position[0]
+                y = position[1]
             Block.BlockMatrix[y][x] = blockType
-        #shfits coordinate data for block matrix
-        def shiftBlockMatrix(rangeStartCoord,rangeEndCoord):
-          for y in range(0,25):
-            for x in range(rangeStartCoord,rangeEndCoord):
-              print("x:",x)
-              print("y:",y)
-              Block.BlockMatrix[y][x-1] = Block.BlockMatrix[y][x]
-              Block.BlockMatrix[y][x] = Block.Type.air
-      
 
+        def getBlockAtLocation(location):
 
+            #x = math.floor(location[0]/blockSize-Character.characterLocation[0])
+            #y = math.floor(location[1]/blockSize-Character.characterLocation[1])-17
 
+            return Block.BlockMatrix[location[1]][location[0]]
 
     class Renderer():
         global blockSize
@@ -124,6 +138,17 @@ class Block():
                 y= y*blockSize
 
             surface.blit(blockType,(x,y))
+
+        def drawBreakingOverlay(surface,position,breakingPhase):
+            x = position[0]
+            x += Character.characterDrawLocation[0]
+
+            y = position[1]
+            y += Character.characterDrawLocation[1]-600
+            y = 400
+
+            #draw block
+            surface.blit(pg.image.load("./Images/block icons/breakingOverlays/stage"+str(breakingPhase)+".png"),(x,y))
 
 class Character():
     global worldLength

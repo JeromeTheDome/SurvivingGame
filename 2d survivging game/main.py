@@ -9,19 +9,25 @@ from gameWindow import Character
 """
 to do list:
 make sand edible
+make tools
 """
 """
 notes: 
-make seperate gravity loop for when the player is moving that checks the players next coord for air and then moves them down
+tools will act as a fractional multiplier to the break speed variable causing the time to break to go down when a given tool is equipped
 """
 
 pg = pygame
 
 #default values
 direction = "right"
+animationSpeed = 4
+playerSpeed = 0.3
 
 jump = False
 jumpIterNum = 0
+
+blockBreakNumber = 1
+blockBreakSpeed = 15
 
 blockSize = 32
 numBlocks = int(800 / blockSize)
@@ -55,12 +61,14 @@ bgImage = BackGround.bgImage("./Images/background images/cloud.png")
 #sets up bottom squares
 for i in range(worldLength):
    Block.Grid.placeBlock((i,500),Block.Type.BlockType.grass,True)
+   Block.Grid.placeBlock((i,501),Block.Type.BlockType.dirt,True)
+   Block.Grid.placeBlock((i,502),Block.Type.BlockType.dirt,True)
+   Block.Grid.placeBlock((i,503),Block.Type.BlockType.dirt,True)
+   Block.Grid.placeBlock((i,504),Block.Type.BlockType.dirt,True)
+   Block.Grid.placeBlock((i,505),Block.Type.BlockType.dirt,True)
 for i in range(worldLength):
-    for g in range(1,500):
-       Block.Grid.placeBlock((i,500 + g),Block.Type.BlockType.dirt,True)
-
-
-
+    for g in range(5,500):
+       Block.Grid.placeBlock((i,500 + g),Block.Type.BlockType.stone,True)
 
 
 #main game loop
@@ -75,7 +83,26 @@ while True:
   if pg.mouse.get_pressed(3) == (True,False,False):
     Block.Grid.placeBlock((ForeGround.getMousePos()[0]+Character.characterDrawLocation[0],  (ForeGround.getMousePos()[1]+Character.characterDrawLocation[1])-600),blockType)
   if pg.mouse.get_pressed(3) == (False,False,True):
-    Block.Grid.placeBlock((ForeGround.getMousePos()[0]+Character.characterDrawLocation[0], (ForeGround.getMousePos()[1]+Character.characterDrawLocation[1])-600), Block.Type.BlockType.air)
+    Block.Grid.SetBlockBreakCoord((ForeGround.getMousePos()[0]+Character.characterDrawLocation[0], (ForeGround.getMousePos()[1]+Character.characterDrawLocation[1])-600))
+
+    if Block.Grid.getBlockAtLocation(Block.Grid.blockBreakingPos) == Block.Type.BlockType.dirt:
+        blockBreakSpeed = 15
+    elif Block.Grid.getBlockAtLocation(Block.Grid.blockBreakingPos) == Block.Type.BlockType.grass:
+        blockBreakSpeed = 20
+    elif Block.Grid.getBlockAtLocation(Block.Grid.blockBreakingPos) == Block.Type.BlockType.sand:
+        blockBreakSpeed = 20
+    if Block.Grid.getBlockAtLocation(Block.Grid.blockBreakingPos) == Block.Type.BlockType.stone:
+        blockBreakSpeed = 50
+    else:
+        blockBreakSpeed = 20
+
+    if iterNum%blockBreakSpeed == 0:
+       blockBreakNumber += 1
+    if blockBreakNumber%6 == 0:
+        Block.Grid.breakBlock((ForeGround.getMousePos()[0]+Character.characterDrawLocation[0], (ForeGround.getMousePos()[1]+Character.characterDrawLocation[1])-600), Block.Type.BlockType.air)
+        blockBreakNumber = 1
+  else:
+    blockBreakNumber = 1
 
   """
   visual screen logic(background, screen scrolling ect.)
@@ -129,9 +156,16 @@ while True:
         for x in range(math.floor(Character.characterLocation[0]),math.floor(Character.characterLocation[0]+26)): 
              #checks if block attempting to be drawn is outside of view distance
              Block.Renderer.drawBlock(ForeGround.display,Block.Type.List[Block.BlockMatrix[y][x]],(x-Character.characterLocation[0],(y-Character.characterLocation[1])+19),False)
+         
+  x1 = math.floor(ForeGround.getMousePos()[0]/blockSize)
+  x1+= math.floor(Character.characterLocation[0])
+  y1 = math.floor(ForeGround.getMousePos()[1]/blockSize)
+  y1+= math.floor(Character.characterLocation[1])
 
- 
-
+  if blockBreakNumber > 1 and Block.Grid.getBlockAtLocation((Block.Grid.blockBreakingPos[0],Block.Grid.blockBreakingPos[1])) != Block.Type.BlockType.air:
+    Block.Renderer.drawBlock(ForeGround.display,pg.image.load("./Images/block icons/breakingOverlays/stage"+str(blockBreakNumber)+".png"),(Block.Grid.blockBreakingPos[0]-Character.characterLocation[0],(Block.Grid.blockBreakingPos[1]-Character.characterLocation[1])+19),False)
+             
+  #ForeGround.display.blit(pg.image.load("./Images/block icons/breakingOverlays/stage1.png"),((math.floor(ForeGround.getMousePos()[0]/blockSize)+Character.characterLocation[0]%1)*blockSize,(math.floor(ForeGround.getMousePos()[1]/blockSize)+Character.characterLocation[1]%1)*blockSize))
   """
   player logic
   """
@@ -175,6 +209,14 @@ while True:
         jump = True
 
   #move left
+  if keyboardInput[pg.K_LSHIFT]:
+      playerSpeed =  0.4
+      animationSpeed = 2
+  else:
+      playerSpeed = 0.3
+      animationSpeed = 4
+
+
   if keyboardInput[pg.K_a]:
     moving = True
     doMove1 = True
@@ -188,10 +230,10 @@ while True:
             Character.characterLocation[1] -= 1
             Character.characterLocation[0] -= 1
         elif Character.Pos.CollisionCheck("left",False,-1,0) != True:
-            Character.characterLocation[0] -= 0.3
+            Character.characterLocation[0] -= playerSpeed
     Character.Pos.update()
     #decides what animation to use for the character
-    if moving == True and iterNum%4 == 0:
+    if moving == True and iterNum%animationSpeed == 0:
         characterImage = Character.Render.SpritePick(direction,movingIter)
         if movingIter >= 4:
             movingIter = 1
@@ -213,9 +255,9 @@ while True:
             Character.characterLocation[1] -= 1
             Character.characterLocation[0] += 1
         elif Character.Pos.CollisionCheck("right",False,2,0) != True:
-            Character.characterLocation[0] += 0.3
+            Character.characterLocation[0] += playerSpeed
     #decides what animation to use for the character
-    if moving == True and iterNum%4 == 0:
+    if moving == True and iterNum%animationSpeed == 0:
         characterImage = Character.Render.SpritePick(direction,movingIter)
         if movingIter >= 4:
             movingIter = 1
@@ -246,8 +288,6 @@ while True:
   """
   any ending functions such as iteration numbers or updates of that kind or misc renderings
   """
-
-  print(Character.Pos.newCollisionCheck(Character.characterLocation[0]+14,Character.characterLocation[1]+17,1))
 
   #draws cursor with block where player cursor is
   ForeGround.display.blit(ForeGround.cursorIcon,(ForeGround.getMousePos()[0]-12,ForeGround.getMousePos()[1]-9))
