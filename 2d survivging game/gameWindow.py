@@ -97,8 +97,8 @@ class Block():
             #translate grid based input into screen cords
             if skipRowTranslation != True:
 
-                x = math.floor(position[0]/blockSize)
-                y = math.floor(position[1]/blockSize)
+                x = math.floor((position[0]+Character.characterDrawLocation[0])/blockSize)
+                y = math.floor((position[1]+Character.characterDrawLocation[1]-600)/blockSize)
             else:
                 x = position[0]
                 y = position[1]
@@ -107,8 +107,8 @@ class Block():
         def breakBlock(position):
             #translate grid based input into screen cords
             
-            x = math.floor(position[0]/blockSize)
-            y = math.floor(position[1]/blockSize)
+            x = math.floor((position[0]+Character.characterDrawLocation[0])/blockSize)
+            y = math.floor((position[1]+Character.characterDrawLocation[1]-600)/blockSize)
          
             Block.BlockMatrix[y][x] = 0
 

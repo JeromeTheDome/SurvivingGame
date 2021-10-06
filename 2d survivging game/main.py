@@ -81,7 +81,7 @@ while True:
 
   #checks mouse input
   if pg.mouse.get_pressed(3) == (True,False,False):
-    Block.Grid.placeBlock((ForeGround.getMousePos()[0]+Character.characterDrawLocation[0],  (ForeGround.getMousePos()[1]+Character.characterDrawLocation[1])-600),Character.Input.blockType)
+    Block.Grid.placeBlock((ForeGround.getMousePos()[0],ForeGround.getMousePos()[1]),Character.Input.blockType)
   if pg.mouse.get_pressed(3) == (False,False,True):
     Block.Grid.SetBlockBreakCoord((ForeGround.getMousePos()[0]+Character.characterDrawLocation[0], (ForeGround.getMousePos()[1]+Character.characterDrawLocation[1])-600))
 
@@ -99,7 +99,7 @@ while True:
     if iterNum%blockBreakSpeed == 0:
        blockBreakNumber += 1
     if blockBreakNumber%6 == 0:
-        Block.Grid.breakBlock((ForeGround.getMousePos()[0]+Character.characterDrawLocation[0], (ForeGround.getMousePos()[1]+Character.characterDrawLocation[1])-600))
+        Block.Grid.breakBlock((ForeGround.getMousePos()[0],ForeGround.getMousePos()[1]))
         blockBreakNumber = 1
   else:
     blockBreakNumber = 1
