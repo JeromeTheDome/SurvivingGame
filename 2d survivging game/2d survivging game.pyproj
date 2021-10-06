@@ -23,6 +23,12 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Character.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="inventory.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="main.py" />
     <Compile Include="gameWindow.py">
       <SubType>Code</SubType>

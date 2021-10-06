@@ -4,7 +4,7 @@ import math
 from gameWindow import ForeGround
 from gameWindow import BackGround
 from gameWindow import Block
-from gameWindow import Character
+from Character import Character
 
 """
 to do list:
@@ -86,7 +86,7 @@ while True:
     Block.Grid.SetBlockBreakCoord((ForeGround.getMousePos()[0]+Character.characterDrawLocation[0], (ForeGround.getMousePos()[1]+Character.characterDrawLocation[1])-600))
 
     if Block.Grid.getBlockAtLocation(Block.Grid.blockBreakingPos) == Block.Type.BlockType.dirt:
-        blockBreakSpeed = 15
+        blockBreakSpeed = 10
     elif Block.Grid.getBlockAtLocation(Block.Grid.blockBreakingPos) == Block.Type.BlockType.grass:
         blockBreakSpeed = 20
     elif Block.Grid.getBlockAtLocation(Block.Grid.blockBreakingPos) == Block.Type.BlockType.sand:
@@ -99,7 +99,7 @@ while True:
     if iterNum%blockBreakSpeed == 0:
        blockBreakNumber += 1
     if blockBreakNumber%6 == 0:
-        Block.Grid.breakBlock((ForeGround.getMousePos()[0]+Character.characterDrawLocation[0], (ForeGround.getMousePos()[1]+Character.characterDrawLocation[1])-600), Block.Type.BlockType.air)
+        Block.Grid.breakBlock((ForeGround.getMousePos()[0]+Character.characterDrawLocation[0], (ForeGround.getMousePos()[1]+Character.characterDrawLocation[1])-600))
         blockBreakNumber = 1
   else:
     blockBreakNumber = 1
@@ -149,21 +149,9 @@ while True:
 
   #block rendering logic is to be placed at the bottom
 
-
-
-  #renders placed blocks
-  for y in range(math.floor(Character.characterLocation[1]-20),math.floor(Character.characterLocation[1]+7)):
-        for x in range(math.floor(Character.characterLocation[0]),math.floor(Character.characterLocation[0]+26)): 
-             #checks if block attempting to be drawn is outside of view distance
-             Block.Renderer.drawBlock(ForeGround.display,Block.Type.List[Block.BlockMatrix[y][x]],(x-Character.characterLocation[0],(y-Character.characterLocation[1])+19),False)
-         
-  x1 = math.floor(ForeGround.getMousePos()[0]/blockSize)
-  x1+= math.floor(Character.characterLocation[0])
-  y1 = math.floor(ForeGround.getMousePos()[1]/blockSize)
-  y1+= math.floor(Character.characterLocation[1])
-
-  if blockBreakNumber > 1 and Block.Grid.getBlockAtLocation((Block.Grid.blockBreakingPos[0],Block.Grid.blockBreakingPos[1])) != Block.Type.BlockType.air:
-    Block.Renderer.drawBlock(ForeGround.display,pg.image.load("./Images/block icons/breakingOverlays/stage"+str(blockBreakNumber)+".png"),(Block.Grid.blockBreakingPos[0]-Character.characterLocation[0],(Block.Grid.blockBreakingPos[1]-Character.characterLocation[1])+19),False)
+  Block.Renderer.drawBlocksOnScreen()
+       
+  Block.Renderer.drawBreakingOverlay(blockBreakNumber)
              
   #ForeGround.display.blit(pg.image.load("./Images/block icons/breakingOverlays/stage1.png"),((math.floor(ForeGround.getMousePos()[0]/blockSize)+Character.characterLocation[0]%1)*blockSize,(math.floor(ForeGround.getMousePos()[1]/blockSize)+Character.characterLocation[1]%1)*blockSize))
   """
@@ -208,79 +196,12 @@ while True:
     if Character.Pos.CollisionCheck("under",False,1) == True:
         jump = True
 
-  #move left
-  if keyboardInput[pg.K_LSHIFT]:
-      playerSpeed =  0.4
-      animationSpeed = 2
-  else:
-      playerSpeed = 0.3
-      animationSpeed = 4
 
+  Character.Input.inputKey(keyboardInput,iterNum)
 
-  if keyboardInput[pg.K_a]:
-    moving = True
-    doMove1 = True
-    direction = "left"
-    #checks for player collisions with adjacent blocks
-    if Character.Pos.CollisionCheck("left",False,-1,-1) or Character.characterLocation[0] < 20:
-            doMove1 = False
-    #updates player pos
-    if doMove1 == True:
-        if Character.Pos.CollisionCheck("left",False,-1,0) == True and iterNum%3 == 0 and Character.Pos.CollisionCheck('above',False) != True:
-            Character.characterLocation[1] -= 1
-            Character.characterLocation[0] -= 1
-        elif Character.Pos.CollisionCheck("left",False,-1,0) != True:
-            Character.characterLocation[0] -= playerSpeed
-    Character.Pos.update()
-    #decides what animation to use for the character
-    if moving == True and iterNum%animationSpeed == 0:
-        characterImage = Character.Render.SpritePick(direction,movingIter)
-        if movingIter >= 4:
-            movingIter = 1
-        else:
-            movingIter+= 1
-
-
-    #move right
-  elif keyboardInput[pg.K_d]:
-    moving = True
-    doMove = True
-    direction = "right"
-    #checks for player collisions with adjacent blocks
-    if Character.Pos.CollisionCheck("right",False,2,-1) or Character.characterLocation[0] > 950:
-            doMove = False    
-    #updates player pos
-    if doMove == True:
-        if Character.Pos.CollisionCheck("right",False,2,0) == True and iterNum%3 == 0 and Character.Pos.CollisionCheck('above',False) != True:
-            Character.characterLocation[1] -= 1
-            Character.characterLocation[0] += 1
-        elif Character.Pos.CollisionCheck("right",False,2,0) != True:
-            Character.characterLocation[0] += playerSpeed
-    #decides what animation to use for the character
-    if moving == True and iterNum%animationSpeed == 0:
-        characterImage = Character.Render.SpritePick(direction,movingIter)
-        if movingIter >= 4:
-            movingIter = 1
-        else:
-            movingIter+= 1
-
-
-  else:
-       moving = False
-       if direction == "right":
-        characterImage = Character.Image.characterStillRight
-       elif direction == "left":
-        characterImage = Character.Image.characterStillLeft
-       movingIter = 1
-
-
-  if keyboardInput[pg.K_s] and moving == False:
-      croutched = True
-  else:
-      croutched = False
   Character.Pos.update()
   #draw character at the end AFTER(DO NOT FORGOR💀) setting game logic for position
-  Character.Render.drawStillX(ForeGround.display,characterImage)
+  Character.Render.drawStillX(ForeGround.display,Character.characterImage)
 
 
 
