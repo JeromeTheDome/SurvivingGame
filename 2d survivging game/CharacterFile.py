@@ -1,5 +1,5 @@
 import pygame as pg
-from gameWindow import Block
+import gameWindow
 import math
 
 worldLength = 1000
@@ -26,7 +26,20 @@ class Character():
         movingIter = 1
         direction = "right"
         animationSpeed = 2
+        blockType = 2 #dirt. .Block dosent exist just right here for some reason
         def inputKey(keyboardInput,iterNum):
+            #blockType logic
+            if keyboardInput[pg.K_1]:
+                Character.Input.blockType = gameWindow.Block.Type.BlockType.grass
+            elif keyboardInput[pg.K_2]:
+                Character.Input.blockType = gameWindow.Block.Type.BlockType.dirt
+            elif keyboardInput[pg.K_3]:
+                Character.Input.blockType = gameWindow.Block.Type.BlockType.stone
+            elif keyboardInput[pg.K_4]:
+                Character.Input.blockType = gameWindow.Block.Type.BlockType.sand
+            elif keyboardInput[pg.K_5]:
+                Character.Input.blockType = gameWindow.Block.Type.BlockType.wood
+
             if keyboardInput[pg.K_a]:
                 moving = True
                 doMove1 = True
@@ -104,27 +117,27 @@ class Character():
         def CollisionCheck(direction ,custom = False,xOffset = 0,yOffset = 0):
             if custom == False:
                 if direction == "right":
-                    if(Block.BlockMatrix[math.floor(Character.characterLocation[1])-2+yOffset][math.floor(Character.characterLocation[0])+11+xOffset] != Block.Type.BlockType.air):
+                    if(gameWindow.Block.BlockMatrix[math.floor(Character.characterLocation[1])-2+yOffset][math.floor(Character.characterLocation[0])+11+xOffset] != gameWindow.Block.Type.BlockType.air):
                         return True
                 elif direction == "left":
-                    if(Block.BlockMatrix[math.floor(Character.characterLocation[1])-2+yOffset][math.floor(Character.characterLocation[0])+13+xOffset] != Block.Type.BlockType.air):
+                    if(gameWindow.Block.BlockMatrix[math.floor(Character.characterLocation[1])-2+yOffset][math.floor(Character.characterLocation[0])+13+xOffset] != gameWindow.Block.Type.BlockType.air):
                         return True
                 elif direction == "leftunder":
-                    if(Block.BlockMatrix[math.floor(Character.characterLocation[1])-2+yOffset][math.floor(Character.characterLocation[0])+11+xOffset] != Block.Type.BlockType.air):
+                    if(gameWindow.Block.BlockMatrix[math.floor(Character.characterLocation[1])-2+yOffset][math.floor(Character.characterLocation[0])+11+xOffset] != gameWindow.Block.Type.BlockType.air):
                         return True
                 elif direction == "rightunder":
-                    if(Block.BlockMatrix[math.floor(Character.characterLocation[1])-2+yOffset][math.floor(Character.characterLocation[0])+13+xOffset] != Block.Type.BlockType.air):
+                    if(gameWindow.Block.BlockMatrix[math.floor(Character.characterLocation[1])-2+yOffset][math.floor(Character.characterLocation[0])+13+xOffset] != gameWindow.Block.Type.BlockType.air):
                         return True
                 elif direction == "under":
-                    if(Block.BlockMatrix[math.floor(Character.characterLocation[1])-1+yOffset][math.floor(Character.characterLocation[0])+11+xOffset] != Block.Type.BlockType.air):
+                    if(gameWindow.Block.BlockMatrix[math.floor(Character.characterLocation[1])-1+yOffset][math.floor(Character.characterLocation[0])+11+xOffset] != gameWindow.Block.Type.BlockType.air):
                         return True
                 elif direction == "above":
-                    if (Block.BlockMatrix[math.floor(Character.characterLocation[1])-4+yOffset][math.floor(Character.characterLocation[0])+12+xOffset] != Block.Type.BlockType.air):
+                    if (gameWindow.Block.BlockMatrix[math.floor(Character.characterLocation[1])-4+yOffset][math.floor(Character.characterLocation[0])+12+xOffset] != gameWindow.Block.Type.BlockType.air):
                         return True
                 else:
                     return False
             elif custom == True:
-                if(Block.BlockMatrix[math.floor(Character.characterLocation[1])-(yOffset+-8)][math.floor(Character.characterLocation[0])+(xOffset+12)] != Block.Type.BlockType.air):
+                if(gameWindow.Block.BlockMatrix[math.floor(Character.characterLocation[1])-(yOffset+-8)][math.floor(Character.characterLocation[0])+(xOffset+12)] != gameWindow.Block.Type.BlockType.air):
                     return True
                 else:
                     return False

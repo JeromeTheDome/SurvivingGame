@@ -4,7 +4,7 @@ import math
 from gameWindow import ForeGround
 from gameWindow import BackGround
 from gameWindow import Block
-from Character import Character
+from CharacterFile import Character
 
 """
 to do list:
@@ -81,7 +81,7 @@ while True:
 
   #checks mouse input
   if pg.mouse.get_pressed(3) == (True,False,False):
-    Block.Grid.placeBlock((ForeGround.getMousePos()[0]+Character.characterDrawLocation[0],  (ForeGround.getMousePos()[1]+Character.characterDrawLocation[1])-600),blockType)
+    Block.Grid.placeBlock((ForeGround.getMousePos()[0]+Character.characterDrawLocation[0],  (ForeGround.getMousePos()[1]+Character.characterDrawLocation[1])-600),Character.Input.blockType)
   if pg.mouse.get_pressed(3) == (False,False,True):
     Block.Grid.SetBlockBreakCoord((ForeGround.getMousePos()[0]+Character.characterDrawLocation[0], (ForeGround.getMousePos()[1]+Character.characterDrawLocation[1])-600))
 
@@ -130,24 +130,9 @@ while True:
   block placement and properties logic
   """
   #grid matrix logic at top
-      
 
-  #blockType logic
-  if keyboardInput[pg.K_1]:
-    blockType = Block.Type.BlockType.grass
-  elif keyboardInput[pg.K_2]:
-    blockType = Block.Type.BlockType.dirt
-  elif keyboardInput[pg.K_3]:
-      blockType = Block.Type.BlockType.stone
-  elif keyboardInput[pg.K_4]:
-    blockType = Block.Type.BlockType.sand
-  elif keyboardInput[pg.K_5]:
-    blockType = Block.Type.BlockType.wood
-
-
-
-
-  #block rendering logic is to be placed at the bottom
+  
+#block rendering logic is to be placed at the bottom
 
   Block.Renderer.drawBlocksOnScreen()
        

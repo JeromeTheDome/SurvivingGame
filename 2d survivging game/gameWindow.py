@@ -1,7 +1,7 @@
 import pygame
 import math
 from enum import IntEnum
-from Character import Character
+from CharacterFile import Character
 
 pg = pygame
 
