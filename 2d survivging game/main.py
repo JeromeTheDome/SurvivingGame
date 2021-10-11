@@ -146,13 +146,13 @@ while True:
 
     
 
-  for event in ev:
-     if event.type == pg.KEYDOWN:
-        if keyboardInput[pg.K_SPACE]:
-            if Character.Pos.CollisionCheck("under",False,1) == True:
-                yVelocity -= 1
+  
 
-  yVelocity += 0.5
+  yVelocity += 0.2
+
+  if yVelocity > 1:
+      yVelocity = 1
+
   if Character.Pos.CollisionCheck("under",False,1) == True:
       yVelocity = 0
 
@@ -160,7 +160,11 @@ while True:
 
   #keyboard input
 
-  
+  for event in ev:
+     if event.type == pg.KEYDOWN:
+        if keyboardInput[pg.K_SPACE]:
+            if Character.Pos.CollisionCheck("under",False,1) == True:
+                yVelocity -= 1
 
 
   Character.Input.inputKey(keyboardInput,iterNum)
