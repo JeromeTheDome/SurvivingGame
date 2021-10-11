@@ -25,6 +25,7 @@ playerSpeed = 0.3
 
 jump = False
 jumpIterNum = 0
+yVelocity = 0
 
 blockBreakNumber = 1
 blockBreakSpeed = 15
@@ -143,43 +144,23 @@ while True:
   player logic
   """
 
+    
 
-  if jump == True:
-      if jumpIterNum < 5:
-        Character.characterLocation[1]-= 0.5
-        jumpIterNum += 1
-        if Character.Pos.CollisionCheck("under",False,1) == True:
-            jumpIterNum = 14
-      elif  5 <= jumpIterNum < 7:
-        Character.characterLocation[1]-= 0.08
-        jumpIterNum += 1
-        if Character.Pos.CollisionCheck("under",False,1) == True:
-            jumpIterNum = 14
-      elif 7 <= jumpIterNum < 9:
-        Character.characterLocation[1]+= 0.08
-        jumpIterNum += 1
-        if Character.Pos.CollisionCheck("under",False,1) == True:
-            jumpIterNum = 14
-      elif 9 <= jumpIterNum < 14:
-        Character.characterLocation[1]+= 0.5
-        jumpIterNum += 1
-        if Character.Pos.CollisionCheck("under",False,1) == True:
-            jumpIterNum = 14
-      elif jumpIterNum >= 14:
-        jump = False
-        jumpIterNum = 0
+  for event in ev:
+     if event.type == pg.KEYDOWN:
+        if keyboardInput[pg.K_SPACE]:
+            if Character.Pos.CollisionCheck("under",False,1) == True:
+                yVelocity -= 1
 
-    #gravity
-  if Character.Pos.CollisionCheck("under",False,1) != True and jump != True and direction == 'right' and Character.characterLocation[1] < 900:
-      Character.characterLocation[1] += 0.5
-  if Character.Pos.CollisionCheck("under",False,2) != True and jump != True and direction == 'left' and Character.characterLocation[1] < 900:
-      Character.characterLocation[1] += 0.5
+  yVelocity += 0.5
+  if Character.Pos.CollisionCheck("under",False,1) == True:
+      yVelocity = 0
+
+  print(yVelocity)
 
   #keyboard input
 
-  if keyboardInput[pg.K_SPACE]:
-    if Character.Pos.CollisionCheck("under",False,1) == True:
-        jump = True
+  
 
 
   Character.Input.inputKey(keyboardInput,iterNum)
@@ -188,7 +169,7 @@ while True:
   #draw character at the end AFTER(DO NOT FORGOR💀) setting game logic for position
   Character.Render.drawStillX(ForeGround.display,Character.characterImage)
 
-
+  Character.characterLocation[1] += yVelocity
 
 
   """
