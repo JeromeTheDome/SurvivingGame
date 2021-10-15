@@ -30,6 +30,9 @@
     <Compile Include="inventory.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="itemIds.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="main.py" />
     <Compile Include="gameWindow.py">
       <SubType>Code</SubType>

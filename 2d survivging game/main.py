@@ -14,6 +14,7 @@ make tools
 """
 notes: 
 tools will act as a fractional multiplier to the break speed variable causing the time to break to go down when a given tool is equipped
+offset from pygame rectangels came from calling the function after the player logic
 """
 
 pg = pygame
@@ -143,8 +144,8 @@ while True:
   """
   player logic
   """
-
-    
+  if Character.characterLocation[1]%1 != 0 and yVelocity == 0:
+      Character.characterLocation[1] = math.floor(Character.characterLocation[1])
 
   
 
@@ -153,10 +154,10 @@ while True:
   if yVelocity > 1:
       yVelocity = 1
 
-  if Character.Pos.CollisionCheck("under",False,1) == True:
+  if Character.Pos.CollisionCheck("under",False,1) == True and Character.Input.direction == "right":
       yVelocity = 0
-
-  print(yVelocity)
+  if Character.Pos.CollisionCheck("under",False,2) == True and Character.Input.direction == "left":
+      yVelocity = 0
 
   #keyboard input
 
@@ -174,7 +175,6 @@ while True:
   Character.Render.drawStillX(ForeGround.display,Character.characterImage)
 
   Character.characterLocation[1] += yVelocity
-
 
   """
   any ending functions such as iteration numbers or updates of that kind or misc renderings

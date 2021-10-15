@@ -15,7 +15,7 @@ numBlocks = int(800/blockSize)
 class Character():
     global worldLength
     #things defined at top are used in many functions and subclasses
-    characterLocation = [(worldLength/2),501]
+    characterLocation = [math.floor(worldLength/2),501]
     characterDrawLocation = [400,400]
     characterBoundingBox = [383,505,36,72]
     playerSpeed = 0.3
@@ -122,12 +122,7 @@ class Character():
                 elif direction == "left":
                     if(gameWindow.Block.BlockMatrix[math.floor(Character.characterLocation[1])-2+yOffset][math.floor(Character.characterLocation[0])+13+xOffset] != gameWindow.Block.Type.BlockType.air):
                         return True
-                elif direction == "leftunder":
-                    if(gameWindow.Block.BlockMatrix[math.floor(Character.characterLocation[1])-2+yOffset][math.floor(Character.characterLocation[0])+11+xOffset] != gameWindow.Block.Type.BlockType.air):
-                        return True
-                elif direction == "rightunder":
-                    if(gameWindow.Block.BlockMatrix[math.floor(Character.characterLocation[1])-2+yOffset][math.floor(Character.characterLocation[0])+13+xOffset] != gameWindow.Block.Type.BlockType.air):
-                        return True
+
                 elif direction == "under":
                     if(gameWindow.Block.BlockMatrix[math.floor(Character.characterLocation[1])-1+yOffset][math.floor(Character.characterLocation[0])+11+xOffset] != gameWindow.Block.Type.BlockType.air):
                         return True
@@ -141,32 +136,20 @@ class Character():
                     return True
                 else:
                     return False
-        def newCollisionCheck(blockCoordX,blockCoordY,xBoundsOffset=0,yBoundsOffset=0,calcOffset=False,moving=0,direction=0):
-            #adding a .30 offset while moving was the only way i could get it to work for moving blocks. this code has made me want to hang myself
-            offset = 0
-            if calcOffset == True and moving == True:
-                if direction == 'left':
-                    offset = 0.30
-                elif direction == 'right':
-                    offset = -0.30
-                else:
-                    offset = 0
-            #calculates the fraction at the end of the character location value to add to the offset
-            xOffset = round(Character.characterLocation[0],1)%1
-            yOffset = round(Character.characterLocation[1],1)%1
+        def newCollisionCheck(blockCoordX,blockCoordY):
+            
+            x = blockCoordX - Character.characterLocation[0]
+            y = blockCoordY - (Character.characterLocation[1]) + 19
 
-            #does offsetting and translates into screen coords
-            blockCoordX -= Character.characterLocation[0]+xOffset
-            blockCoordX = blockCoordX * blockSize
+            x = x * blockSize
+            y = y * blockSize
 
-            #does offsetting and translates into screen coords
-            blockCoordY -= Character.characterLocation[1]+yOffset
-            blockCoordY = blockCoordY * blockSize
+            boundingBox = pg.Rect(Character.characterBoundingBox[0],Character.characterBoundingBox[1],Character.characterBoundingBox[2],Character.characterBoundingBox[3])
 
-            #defines bounding box locally so i can add offsets
-            boundingBox = pg.Rect(Character.characterBoundingBox[0]+xBoundsOffset,Character.characterBoundingBox[1]+yBoundsOffset,Character.characterBoundingBox[2],Character.characterBoundingBox[3])
-            pg.draw.rect(ForeGround.display,(255,0,0),pg.Rect(blockCoordX,blockCoordY,32,32))
-            if boundingBox.colliderect(pg.Rect(blockCoordX,blockCoordY,32,32)):
+            #debug shit
+            pg.draw.rect(gameWindow.ForeGround.display,(255,0,0),pg.Rect(x,y,32,32))
+
+            if boundingBox.colliderect(pg.Rect(x,y,32,32)) and gameWindow.Block.BlockMatrix[math.floor(blockCoordY)][math.floor(blockCoordX)] != gameWindow.Block.Type.BlockType.air:
                 return True
             else:
                 return False

@@ -130,6 +130,7 @@ class Block():
 
             surface.blit(blockType,(x,y))
 
+
         def drawBreakingOverlay(blockBreakNumber):
             if blockBreakNumber > 1 and Block.Grid.getBlockAtLocation((Block.Grid.blockBreakingPos[0],Block.Grid.blockBreakingPos[1])) != Block.Type.BlockType.air:
                    Block.Renderer.drawBlock(ForeGround.display,pg.image.load("./Images/block icons/breakingOverlays/stage"+str(blockBreakNumber)+".png"),(Block.Grid.blockBreakingPos[0],Block.Grid.blockBreakingPos[1]))
