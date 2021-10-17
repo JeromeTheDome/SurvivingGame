@@ -154,6 +154,9 @@ while True:
   if yVelocity > 1:
       yVelocity = 1
 
+  if Character.Pos.CollisionCheck("under",False,1,-2) == True and Character.Input.direction == "right":
+      yVelocity = 0
+
   if Character.Pos.CollisionCheck("under",False,1) == True and Character.Input.direction == "right":
       yVelocity = 0
   if Character.Pos.CollisionCheck("under",False,2) == True and Character.Input.direction == "left":
@@ -167,6 +170,12 @@ while True:
             if Character.Pos.CollisionCheck("under",False,1) == True:
                 yVelocity -= 1
 
+  if Character.Pos.CollisionCheck("under",False,1,-3) == True and Character.Input.direction == "right":
+      if yVelocity < 0:
+        yVelocity = 0
+  if Character.Pos.CollisionCheck("under",False,2,-3) == True and Character.Input.direction == "left":
+      if yVelocity < 0:
+        yVelocity = 0
 
   Character.Input.inputKey(keyboardInput,iterNum)
 
