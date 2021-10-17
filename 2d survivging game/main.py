@@ -21,6 +21,8 @@ offset from pygame rectangels came from calling the function after the player lo
 pg = pygame
 
 #default values
+selectedBox = None
+
 direction = "right"
 animationSpeed = 4
 playerSpeed = 0.3
@@ -87,9 +89,12 @@ while True:
     for i in range(9):
      if math.floor(ForeGround.getMousePos()[0]/48) == i and math.floor(ForeGround.getMousePos()[1]/48) == 0:
           print(i)
+          Inventory.selectedSlot = i
       
-    if ForeGround.getMousePos()[0] > 432 or ForeGround.getMousePos()[1] > 48:
-        Block.Grid.placeBlock((ForeGround.getMousePos()[0],ForeGround.getMousePos()[1]),Character.Input.blockType)
+    if Inventory.selectedSlot != None and (ForeGround.getMousePos()[0] > 432 or ForeGround.getMousePos()[1] > 48) and 1 <= Inventory.grid[0][Inventory.selectedSlot] <= 50:
+        Block.Grid.placeBlock((ForeGround.getMousePos()[0],ForeGround.getMousePos()[1]),Inventory.grid[0][Inventory.selectedSlot])
+
+  #right click
   if pg.mouse.get_pressed(3) == (False,False,True):
     Block.Grid.SetBlockBreakCoord((ForeGround.getMousePos()[0]+Character.characterDrawLocation[0], (ForeGround.getMousePos()[1]+Character.characterDrawLocation[1])-600))
 
@@ -109,6 +114,9 @@ while True:
     if blockBreakNumber%6 == 0:
         Block.Grid.breakBlock((ForeGround.getMousePos()[0],ForeGround.getMousePos()[1]))
         blockBreakNumber = 1
+        
+  if pg.mouse.get_pressed(3) == (False,True,False) and Inventory.selectedSlot != None and Block.Grid.getBlockAtLocation((ForeGround.getMousePos()[0],ForeGround.getMousePos()[1])) != Block.Type.BlockType.air:
+      Inventory.grid[0][Inventory.selectedSlot] = Block.Grid.getBlockAtLocation((ForeGround.getMousePos()[0],ForeGround.getMousePos()[1]))
   else:
     blockBreakNumber = 1
 
@@ -191,11 +199,20 @@ while True:
   Character.characterLocation[1] += yVelocity
 
   """
-  any ending functions such as iteration numbers or updates of that kind or misc renderings
+  hud/inventory code
   """
 
+  #hud rendering code
   for i in range(9):
-    Inventory.Render.renderBox(((i*48),1))
+    if i == Inventory.selectedSlot:
+        Inventory.Render.renderBox(((i*48),1),Inventory.grid[0][i],True)
+    else:
+        Inventory.Render.renderBox(((i*48),1),Inventory.grid[0][i])
+
+
+  """
+  any ending functions such as iteration numbers or updates of that kind or misc renderings
+  """
 
   #draws cursor with block where player cursor is
   ForeGround.display.blit(ForeGround.cursorIcon,(ForeGround.getMousePos()[0]-12,ForeGround.getMousePos()[1]-9))

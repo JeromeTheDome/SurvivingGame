@@ -114,7 +114,10 @@ class Block():
 
         def getBlockAtLocation(location):
 
-            return Block.BlockMatrix[location[1]][location[0]]
+            x = math.floor((location[0]+Character.characterDrawLocation[0])/blockSize)
+            y = math.floor((location[1]+Character.characterDrawLocation[1]-600)/blockSize)
+
+            return Block.BlockMatrix[y][x]
 
     class Renderer():
         global blockSize

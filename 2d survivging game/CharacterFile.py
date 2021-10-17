@@ -1,6 +1,7 @@
 import pygame as pg
 import gameWindow
 import math
+import inventory
 
 worldLength = 1000
 worldHeight = 1000
@@ -30,15 +31,23 @@ class Character():
         def inputKey(keyboardInput,iterNum):
             #blockType logic
             if keyboardInput[pg.K_1]:
-                Character.Input.blockType = gameWindow.Block.Type.BlockType.grass
+                inventory.Inventory.selectedSlot = 0
             elif keyboardInput[pg.K_2]:
-                Character.Input.blockType = gameWindow.Block.Type.BlockType.dirt
+                inventory.Inventory.selectedSlot = 1
             elif keyboardInput[pg.K_3]:
-                Character.Input.blockType = gameWindow.Block.Type.BlockType.stone
+                inventory.Inventory.selectedSlot = 2
             elif keyboardInput[pg.K_4]:
-                Character.Input.blockType = gameWindow.Block.Type.BlockType.sand
+                inventory.Inventory.selectedSlot = 3
             elif keyboardInput[pg.K_5]:
-                Character.Input.blockType = gameWindow.Block.Type.BlockType.wood
+                inventory.Inventory.selectedSlot = 4
+            elif keyboardInput[pg.K_6]:
+                inventory.Inventory.selectedSlot = 5
+            elif keyboardInput[pg.K_7]:
+                inventory.Inventory.selectedSlot = 6
+            elif keyboardInput[pg.K_8]:
+                inventory.Inventory.selectedSlot = 7
+            elif keyboardInput[pg.K_9]:
+                inventory.Inventory.selectedSlot = 8
 
             if keyboardInput[pg.K_a]:
                 moving = True
