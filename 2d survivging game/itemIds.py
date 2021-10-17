@@ -1,12 +1,13 @@
-from enum import intEnum
+from enum import IntEnum
 import pygame as pg
 
 class Items():
     #defines item ids
-    class Id():
-            PICKAXE = 0
-            lastentry = 1
+    class Id(IntEnum):
+            empty = 0
+            pickaxe = 1
+            lastentry = 2
 
     #assigns icons to each item id
-    Icon = [pg.image] * BlockType.lastentry
-    List[BlockType.PICKAXE] = pg.image.load("./Images/Item Icons/pickaxe.png")
+    iconList = [pg.image] * Id.lastentry
+    iconList[Id.pickaxe] = pg.image.load("./Images/Item Icons/pickaxe.png")

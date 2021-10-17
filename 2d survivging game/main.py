@@ -5,6 +5,7 @@ from gameWindow import ForeGround
 from gameWindow import BackGround
 from gameWindow import Block
 from CharacterFile import Character
+from inventory import Inventory
 
 """
 to do list:
@@ -83,7 +84,12 @@ while True:
 
   #checks mouse input
   if pg.mouse.get_pressed(3) == (True,False,False):
-    Block.Grid.placeBlock((ForeGround.getMousePos()[0],ForeGround.getMousePos()[1]),Character.Input.blockType)
+    for i in range(9):
+     if math.floor(ForeGround.getMousePos()[0]/48) == i and math.floor(ForeGround.getMousePos()[1]/48) == 0:
+          print(i)
+      
+    if ForeGround.getMousePos()[0] > 432 or ForeGround.getMousePos()[1] > 48:
+        Block.Grid.placeBlock((ForeGround.getMousePos()[0],ForeGround.getMousePos()[1]),Character.Input.blockType)
   if pg.mouse.get_pressed(3) == (False,False,True):
     Block.Grid.SetBlockBreakCoord((ForeGround.getMousePos()[0]+Character.characterDrawLocation[0], (ForeGround.getMousePos()[1]+Character.characterDrawLocation[1])-600))
 
@@ -109,7 +115,6 @@ while True:
   """
   visual screen logic(background, screen scrolling ect.)
   """
-
 
   #draws background image
   BackGround.BlitToSurface(ForeGround.display,bgImage,scrollSpeed-4)
@@ -188,6 +193,9 @@ while True:
   """
   any ending functions such as iteration numbers or updates of that kind or misc renderings
   """
+
+  for i in range(9):
+    Inventory.Render.renderBox(((i*48),1))
 
   #draws cursor with block where player cursor is
   ForeGround.display.blit(ForeGround.cursorIcon,(ForeGround.getMousePos()[0]-12,ForeGround.getMousePos()[1]-9))
