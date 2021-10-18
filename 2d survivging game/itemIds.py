@@ -18,6 +18,7 @@ class Items():
 
     #assigns icons to each item id
     iconList = [pg.image] * Id.lastentry
+    iconList[Id.empty] = pg.image.load("./Images/Item Icons/empty.png")
     iconList[Id.stone] = pg.image.load("./Images/Item Icons/stoneIcon.png")
     iconList[Id.dirt] = pg.image.load("./Images/Item Icons/dirtIcon.png")
     iconList[Id.grass] = pg.image.load("./Images/Item Icons/grassIcon.png")

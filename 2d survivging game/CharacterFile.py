@@ -2,6 +2,7 @@ import pygame as pg
 import gameWindow
 import math
 import inventory
+import itemIds
 
 worldLength = 1000
 worldHeight = 1000
@@ -100,6 +101,20 @@ class Character():
                     Character.characterImage = Character.Image.characterStillLeft
                    Character.Input.movingIter = 1
 
+            if keyboardInput[pg.K_F1]:
+                inventory.Inventory.grid[0][0] = itemIds.Items.Id.stone
+                inventory.Inventory.stackAmount[0][0] = 100
+                inventory.Inventory.grid[0][1] = itemIds.Items.Id.dirt
+                inventory.Inventory.stackAmount[0][1] = 100
+                inventory.Inventory.grid[0][2] = itemIds.Items.Id.grass
+                inventory.Inventory.stackAmount[0][2] = 100
+                inventory.Inventory.grid[0][3] = itemIds.Items.Id.sand
+                inventory.Inventory.stackAmount[0][3] = 100
+                inventory.Inventory.grid[0][4] = itemIds.Items.Id.wood
+                inventory.Inventory.stackAmount[0][4] = 100
+            
+           
+
             if keyboardInput[pg.K_LSHIFT]:
               Character.playerSpeed =  0.4
               Character.Input.animationSpeed = 2
@@ -155,7 +170,7 @@ class Character():
 
             boundingBox = pg.Rect(Character.characterBoundingBox[0],Character.characterBoundingBox[1],Character.characterBoundingBox[2],Character.characterBoundingBox[3])
 
-            #debug shit
+            #debug stuff
             pg.draw.rect(gameWindow.ForeGround.display,(255,0,0),pg.Rect(x,y,32,32))
 
             if boundingBox.colliderect(pg.Rect(x,y,32,32)) and gameWindow.Block.BlockMatrix[math.floor(blockCoordY)][math.floor(blockCoordX)] != gameWindow.Block.Type.BlockType.air:

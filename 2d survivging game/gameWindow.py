@@ -2,6 +2,7 @@ import pygame
 import math
 from enum import IntEnum
 from CharacterFile import Character
+from pygame.locals import *
 
 pg = pygame
 
@@ -21,7 +22,8 @@ class ForeGround():
   #inits the pygame window
   def __init__(self):
     pg.init()
-    ForeGround.display = pg.display.set_mode((800,800))
+    flags = DOUBLEBUF
+    ForeGround.display = pg.display.set_mode((800,800),flags)
   def getMousePos():
    mousePos = [pg.mouse.get_pos()[0], pg.mouse.get_pos()[1]]
    return mousePos
@@ -119,6 +121,9 @@ class Block():
 
             return Block.BlockMatrix[y][x]
 
+        def getBlockAtLocation2(location):
+            return Block.BlockMatrix[location[1]][location[0]]
+
     class Renderer():
         global blockSize
         #takes coordinates from 0 to 20 on both axis
@@ -135,7 +140,7 @@ class Block():
 
 
         def drawBreakingOverlay(blockBreakNumber):
-            if blockBreakNumber > 1 and Block.Grid.getBlockAtLocation((Block.Grid.blockBreakingPos[0],Block.Grid.blockBreakingPos[1])) != Block.Type.BlockType.air:
+            if blockBreakNumber > 1 and Block.Grid.getBlockAtLocation2(Block.Grid.blockBreakingPos) != Block.Type.BlockType.air:
                    Block.Renderer.drawBlock(ForeGround.display,pg.image.load("./Images/block icons/breakingOverlays/stage"+str(blockBreakNumber)+".png"),(Block.Grid.blockBreakingPos[0],Block.Grid.blockBreakingPos[1]))
         def drawBlocksOnScreen():
             for y in range(math.floor(Character.characterLocation[1]-20),math.floor(Character.characterLocation[1]+7)):

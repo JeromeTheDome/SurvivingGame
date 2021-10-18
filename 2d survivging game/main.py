@@ -6,7 +6,8 @@ from gameWindow import BackGround
 from gameWindow import Block
 from CharacterFile import Character
 from inventory import Inventory
-
+from itemIds import Items
+from pygame.locals import *
 """
 to do list:
 make sand edible
@@ -19,8 +20,11 @@ offset from pygame rectangels came from calling the function after the player lo
 """
 
 pg = pygame
+pygame.font.init()
 
 #default values
+inventoryBackGround = pg.image.load("./Images/hud/openInventoryBackground.png")
+
 selectedBox = None
 
 direction = "right"
@@ -47,6 +51,8 @@ blockType = Block.Type.BlockType.dirt
 characterImage = Character.Image.characterStillRight
 croutched = False
 
+myfont = pygame.font.SysFont('Comic Sans MS', 18)
+
 #screen scroll values
 scrollSpeed = 0
 scrollDirection = 1
@@ -57,7 +63,7 @@ iterNum = 0
 characterX = 10
 characterY = 10
 
-#inits backround and foreground
+#inits
 ForeGround.__init__(1)
 
 #defines background image
@@ -76,6 +82,9 @@ for i in range(worldLength):
        Block.Grid.placeBlock((i,500 + g),Block.Type.BlockType.stone,True)
 
 
+
+
+
 #main game loop
 while True:
   #gets pygame events
@@ -86,39 +95,84 @@ while True:
 
   #checks mouse input
   if pg.mouse.get_pressed(3) == (True,False,False):
-    for i in range(9):
-     if math.floor(ForeGround.getMousePos()[0]/48) == i and math.floor(ForeGround.getMousePos()[1]/48) == 0:
-          print(i)
-          Inventory.selectedSlot = i
+
+    if Inventory.open == False:
+        for i in range(9):
+         if math.floor(ForeGround.getMousePos()[0]/48) == i and math.floor(ForeGround.getMousePos()[1]/48) == 0:
+              Inventory.selectedSlot = i
+    elif Inventory.open == True:
+        for y in range(5):
+            for x in range(9):
+                if math.floor(ForeGround.getMousePos()[0]/48) == x and math.floor(ForeGround.getMousePos()[1]/48) == y:
+
+                    for event in ev:
+                        if event.type == pygame.MOUSEBUTTONDOWN:
+
+                            if Inventory.itemOnCursor != Items.Id.empty and Inventory.grid[y][x] != Items.Id.empty:
+                                temporaryItem = Inventory.itemOnCursor
+                                temporaryItemCount = Inventory.itemCountOnCursor
+
+                                Inventory.itemOnCursor = Inventory.grid[y][x]
+                                Inventory.itemCountOnCursor = Inventory.stackAmount[y][x]
+
+                                Inventory.grid[y][x] = temporaryItem
+                                Inventory.stackAmount[y][x] = temporaryItemCount
+
+                            elif Inventory.itemOnCursor == Items.Id.empty:
+                                Inventory.itemOnCursor = Inventory.grid[y][x]
+                                Inventory.itemCountOnCursor = Inventory.stackAmount[y][x]
+
+                                Inventory.grid[y][x] = Items.Id.empty
+                                Inventory.stackAmount[y][x] = 0
+
+                            elif Inventory.itemOnCursor != Items.Id.empty:
+                                Inventory.grid[y][x] = Inventory.itemOnCursor
+                                Inventory.stackAmount[y][x] = Inventory.itemCountOnCursor
+
+                                Inventory.itemOnCursor = Items.Id.empty
+                                Inventory.itemCountOnCursor = 0
+
+
       
     if Inventory.selectedSlot != None and (ForeGround.getMousePos()[0] > 432 or ForeGround.getMousePos()[1] > 48) and 1 <= Inventory.grid[0][Inventory.selectedSlot] <= 50:
+        if Inventory.stackAmount[0][Inventory.selectedSlot] <= 0:
+            Inventory.grid[0][Inventory.selectedSlot] = Items.Id.empty
+            Inventory.stackAmount[0][Inventory.selectedSlot] = 0
+
+        elif Block.Grid.getBlockAtLocation((ForeGround.getMousePos()[0],ForeGround.getMousePos()[1])) == Block.Type.BlockType.air:
+            Inventory.stackAmount[0][Inventory.selectedSlot] -= 1
         Block.Grid.placeBlock((ForeGround.getMousePos()[0],ForeGround.getMousePos()[1]),Inventory.grid[0][Inventory.selectedSlot])
 
   #right click
   if pg.mouse.get_pressed(3) == (False,False,True):
+    
     Block.Grid.SetBlockBreakCoord((ForeGround.getMousePos()[0]+Character.characterDrawLocation[0], (ForeGround.getMousePos()[1]+Character.characterDrawLocation[1])-600))
 
-    if Block.Grid.getBlockAtLocation(Block.Grid.blockBreakingPos) == Block.Type.BlockType.dirt:
+    if Block.Grid.getBlockAtLocation2(Block.Grid.blockBreakingPos) == Block.Type.BlockType.dirt:
         blockBreakSpeed = 10
-    elif Block.Grid.getBlockAtLocation(Block.Grid.blockBreakingPos) == Block.Type.BlockType.grass:
+    elif Block.Grid.getBlockAtLocation2(Block.Grid.blockBreakingPos) == Block.Type.BlockType.grass:
         blockBreakSpeed = 20
-    elif Block.Grid.getBlockAtLocation(Block.Grid.blockBreakingPos) == Block.Type.BlockType.sand:
+    elif Block.Grid.getBlockAtLocation2(Block.Grid.blockBreakingPos) == Block.Type.BlockType.sand:
         blockBreakSpeed = 20
-    if Block.Grid.getBlockAtLocation(Block.Grid.blockBreakingPos) == Block.Type.BlockType.stone:
+    elif Block.Grid.getBlockAtLocation2(Block.Grid.blockBreakingPos) == Block.Type.BlockType.stone:
         blockBreakSpeed = 50
+    elif Block.Grid.getBlockAtLocation2(Block.Grid.blockBreakingPos) == Block.Type.BlockType.air:
+        blockBreakNumber = 1
     else:
         blockBreakSpeed = 20
 
     if iterNum%blockBreakSpeed == 0:
        blockBreakNumber += 1
     if blockBreakNumber%6 == 0:
+        Inventory.addItem(Block.Grid.getBlockAtLocation2(Block.Grid.blockBreakingPos))
         Block.Grid.breakBlock((ForeGround.getMousePos()[0],ForeGround.getMousePos()[1]))
         blockBreakNumber = 1
-        
+  else:
+        blockBreakNumber = 1    
+
   if pg.mouse.get_pressed(3) == (False,True,False) and Inventory.selectedSlot != None and Block.Grid.getBlockAtLocation((ForeGround.getMousePos()[0],ForeGround.getMousePos()[1])) != Block.Type.BlockType.air:
       Inventory.grid[0][Inventory.selectedSlot] = Block.Grid.getBlockAtLocation((ForeGround.getMousePos()[0],ForeGround.getMousePos()[1]))
-  else:
-    blockBreakNumber = 1
+  
 
   """
   visual screen logic(background, screen scrolling ect.)
@@ -182,6 +236,11 @@ while True:
         if keyboardInput[pg.K_SPACE]:
             if Character.Pos.CollisionCheck("under",False,1) == True:
                 yVelocity -= 1
+  for event in ev:
+     if event.type == pg.KEYDOWN:
+        if keyboardInput[pg.K_TAB]:
+            Inventory.open = not Inventory.open
+            
 
   if Character.Pos.CollisionCheck("under",False,1,-3) == True and Character.Input.direction == "right":
       if yVelocity < 0:
@@ -203,11 +262,22 @@ while True:
   """
 
   #hud rendering code
+  if Inventory.open == True:
+      ForeGround.display.blit(inventoryBackGround,(0,0))
+      for y in range(1,5):
+        for x in range(9):
+                Inventory.Render.renderBox(((x*48),(y*48)),Inventory.grid[y][x])
+                ForeGround.display.blit(myfont.render(str(Inventory.stackAmount[y][x]), False, (0, 0, 0)),(x*48+30,y*48+24))
+
   for i in range(9):
     if i == Inventory.selectedSlot:
         Inventory.Render.renderBox(((i*48),1),Inventory.grid[0][i],True)
+        ForeGround.display.blit(myfont.render(str(Inventory.stackAmount[0][i]), False, (150, 150, 150)),(i*48+30,25))
     else:
         Inventory.Render.renderBox(((i*48),1),Inventory.grid[0][i])
+        ForeGround.display.blit(myfont.render(str(Inventory.stackAmount[0][i]), False, (150, 150, 150)),(i*48+30,25))
+
+  
 
 
   """
@@ -216,6 +286,7 @@ while True:
 
   #draws cursor with block where player cursor is
   ForeGround.display.blit(ForeGround.cursorIcon,(ForeGround.getMousePos()[0]-12,ForeGround.getMousePos()[1]-9))
+  ForeGround.display.blit(Items.iconList[Inventory.itemOnCursor],(ForeGround.getMousePos()[0]-12,ForeGround.getMousePos()[1]-9))
 
   #number of times the while loop has run
   iterNum +=1
