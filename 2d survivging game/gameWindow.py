@@ -3,6 +3,8 @@ import math
 from enum import IntEnum
 from CharacterFile import Character
 from pygame.locals import *
+import inventory
+import itemIds
 
 pg = pygame
 
@@ -44,6 +46,24 @@ class BackGround():
 class Block():
     #start of subclasses
     class Type():
+        def determineBreakingSpeed():
+            breakSpeedMod = 1
+            if inventory.Inventory.selectedSlot != None and 51 <= inventory.Inventory.grid[0][inventory.Inventory.selectedSlot] <= 100:
+                if inventory.Inventory.grid[0][inventory.Inventory.selectedSlot] == itemIds.Items.Id.defaultPick:
+                    breakSpeedMod = 0.7
+
+            if Block.Grid.getBlockAtLocation2(Block.Grid.blockBreakingPos) == Block.Type.BlockType.dirt:
+                blockBreakSpeed = 10 * breakSpeedMod
+            elif Block.Grid.getBlockAtLocation2(Block.Grid.blockBreakingPos) == Block.Type.BlockType.grass:
+                blockBreakSpeed = 20 * breakSpeedMod
+                print(blockBreakSpeed)
+            elif Block.Grid.getBlockAtLocation2(Block.Grid.blockBreakingPos) == Block.Type.BlockType.sand:
+                blockBreakSpeed = 20 * breakSpeedMod
+            elif Block.Grid.getBlockAtLocation2(Block.Grid.blockBreakingPos) == Block.Type.BlockType.stone:
+                blockBreakSpeed = 50 * breakSpeedMod
+            else:
+                blockBreakSpeed = 20 * breakSpeedMod
+            return blockBreakSpeed
 
         class BlockType(IntEnum):
             air = 0

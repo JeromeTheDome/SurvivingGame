@@ -83,7 +83,8 @@ for i in range(worldLength):
 
 
 
-
+Inventory.grid[0][0] = Items.Id.defaultPick
+Inventory.stackAmount[0][0] = 1
 
 #main game loop
 while True:
@@ -94,13 +95,15 @@ while True:
   #START
 
   #checks mouse input
-  if pg.mouse.get_pressed(3) == (True,False,False):
+  if pg.mouse.get_pressed(3) == (False,False,True):
 
     if Inventory.open == False:
+        ySize = 48
         for i in range(9):
          if math.floor(ForeGround.getMousePos()[0]/48) == i and math.floor(ForeGround.getMousePos()[1]/48) == 0:
               Inventory.selectedSlot = i
     elif Inventory.open == True:
+        ySize = 240
         for y in range(5):
             for x in range(9):
                 if math.floor(ForeGround.getMousePos()[0]/48) == x and math.floor(ForeGround.getMousePos()[1]/48) == y:
@@ -132,9 +135,9 @@ while True:
                                 Inventory.itemOnCursor = Items.Id.empty
                                 Inventory.itemCountOnCursor = 0
 
-
+              
       
-    if Inventory.selectedSlot != None and (ForeGround.getMousePos()[0] > 432 or ForeGround.getMousePos()[1] > 48) and 1 <= Inventory.grid[0][Inventory.selectedSlot] <= 50:
+    if Inventory.selectedSlot != None and (ForeGround.getMousePos()[0] > 432 or ForeGround.getMousePos()[1] > ySize) and 1 <= Inventory.grid[0][Inventory.selectedSlot] <= 50:
         if Inventory.stackAmount[0][Inventory.selectedSlot] <= 0:
             Inventory.grid[0][Inventory.selectedSlot] = Items.Id.empty
             Inventory.stackAmount[0][Inventory.selectedSlot] = 0
@@ -144,25 +147,16 @@ while True:
         Block.Grid.placeBlock((ForeGround.getMousePos()[0],ForeGround.getMousePos()[1]),Inventory.grid[0][Inventory.selectedSlot])
 
   #right click
-  if pg.mouse.get_pressed(3) == (False,False,True):
+  if pg.mouse.get_pressed(3) == (True,False,False):
 
     if Block.Grid.blockBreakingPos != Block.Grid.blockBreakingPosLast:
        blockBreakNumber = 1
 
     Block.Grid.SetBlockBreakCoord((ForeGround.getMousePos()[0]+Character.characterDrawLocation[0], (ForeGround.getMousePos()[1]+Character.characterDrawLocation[1])-600))
 
-    if Block.Grid.getBlockAtLocation2(Block.Grid.blockBreakingPos) == Block.Type.BlockType.dirt:
-        blockBreakSpeed = 10
-    elif Block.Grid.getBlockAtLocation2(Block.Grid.blockBreakingPos) == Block.Type.BlockType.grass:
-        blockBreakSpeed = 20
-    elif Block.Grid.getBlockAtLocation2(Block.Grid.blockBreakingPos) == Block.Type.BlockType.sand:
-        blockBreakSpeed = 20
-    elif Block.Grid.getBlockAtLocation2(Block.Grid.blockBreakingPos) == Block.Type.BlockType.stone:
-        blockBreakSpeed = 50
-    elif Block.Grid.getBlockAtLocation2(Block.Grid.blockBreakingPos) == Block.Type.BlockType.air:
-        blockBreakNumber = 1
-    else:
-        blockBreakSpeed = 20
+    blockBreakSpeed = Block.Type.determineBreakingSpeed()
+    if Block.Grid.getBlockAtLocation2(Block.Grid.blockBreakingPos) == Block.Type.BlockType.air:
+            blockBreakNumber = 1
 
     if iterNum%blockBreakSpeed == 0:
        blockBreakNumber += 1

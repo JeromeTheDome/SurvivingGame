@@ -12,11 +12,12 @@ class Items():
             sand = 4
             wood = 5
             #51 to 100 reserved for tools
-
+            defaultPick = 51
             #101 and up is for other items
-            lastentry = 6
+            lastentry = 101
 
     #assigns icons to each item id
+    #blocks
     iconList = [pg.image] * Id.lastentry
     iconList[Id.empty] = pg.image.load("./Images/Item Icons/empty.png")
     iconList[Id.stone] = pg.image.load("./Images/Item Icons/stoneIcon.png")
@@ -24,3 +25,5 @@ class Items():
     iconList[Id.grass] = pg.image.load("./Images/Item Icons/grassIcon.png")
     iconList[Id.sand] = pg.image.load("./Images/Item Icons/sandIcon.png")
     iconList[Id.wood] = pg.image.load("./Images/Item Icons/woodIcon.png")
+    #tools/weapons
+    iconList[Id.defaultPick] = pg.image.load("./Images/Item Icons/pickaxe.png")
