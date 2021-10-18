@@ -34,6 +34,11 @@ class Inventory():
 
         return True
 
+    #def dropItem(slot):
+        #Inventory.grid[0][slot] = Items.Id.empty
+        #Inventory.stackAmount[0][slot] = 0
+
+
     class Render():
         inventoryBox = pg.image.load("./Images/hud/inventoryBox.png")
         inventoryBoxSelected = pg.image.load("./Images/hud/inventoryBoxSelected.png")

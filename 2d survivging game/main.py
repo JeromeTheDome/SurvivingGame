@@ -145,7 +145,10 @@ while True:
 
   #right click
   if pg.mouse.get_pressed(3) == (False,False,True):
-    
+
+    if Block.Grid.blockBreakingPos != Block.Grid.blockBreakingPosLast:
+       blockBreakNumber = 1
+
     Block.Grid.SetBlockBreakCoord((ForeGround.getMousePos()[0]+Character.characterDrawLocation[0], (ForeGround.getMousePos()[1]+Character.characterDrawLocation[1])-600))
 
     if Block.Grid.getBlockAtLocation2(Block.Grid.blockBreakingPos) == Block.Type.BlockType.dirt:

@@ -85,12 +85,16 @@ class Block():
         global blockSize
 
         blockBreakingPos = [0,0]
+        blockBreakingPosLast = [0,0]
 
         #inits the BlockGrid
 
         def SetBlockBreakCoord(position):
-            x = math.floor(position[0]/blockSize)
-            y = math.floor(position[1]/blockSize)
+            x = math.floor((position[0])/blockSize)
+            y = math.floor((position[1]-8)/blockSize)
+
+            Block.Grid.blockBreakingPosLast[0] = Block.Grid.blockBreakingPos[0]
+            Block.Grid.blockBreakingPosLast[1] = Block.Grid.blockBreakingPos[1]
 
             Block.Grid.blockBreakingPos[0] = x
             Block.Grid.blockBreakingPos[1] = y
@@ -110,7 +114,7 @@ class Block():
             #translate grid based input into screen cords
             
             x = math.floor((position[0]+Character.characterDrawLocation[0])/blockSize)
-            y = math.floor((position[1]+Character.characterDrawLocation[1]-600)/blockSize)
+            y = math.floor((position[1]+Character.characterDrawLocation[1]-608)/blockSize)
          
             Block.BlockMatrix[y][x] = 0
 
