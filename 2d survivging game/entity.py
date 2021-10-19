@@ -19,8 +19,6 @@ class Entity():
 		
 		self.drawCoordinates[0] = self.coordinates[0]*32 - CharacterFile.Character.characterLocation[0]*32
 		self.drawCoordinates[1] = self.coordinates[1]*32 - CharacterFile.Character.characterLocation[1]*32
-		print(self.drawCoordinates)
-		print(self.coordinates)
 	def gravityUpdate(self,terminalVelocity = 10,gravity = 5):
 		if self.boundingBox[1] < 200:
 			self.yVelocity += gravity
