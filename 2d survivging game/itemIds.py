@@ -13,6 +13,8 @@ class Items():
             wood = 5
             #51 to 100 reserved for tools
             defaultPick = 51
+            defaultAxe = 52
+            defaultShovel = 53
             #101 and up is for other items
             lastentry = 101
 
@@ -27,3 +29,5 @@ class Items():
     iconList[Id.wood] = pg.image.load("./Images/Item Icons/woodIcon.png")
     #tools/weapons
     iconList[Id.defaultPick] = pg.image.load("./Images/Item Icons/pickaxe.png")
+    iconList[Id.defaultAxe] = pg.image.load("./Images/Item Icons/axe.png")
+    iconList[Id.defaultShovel] = pg.image.load("./Images/Item Icons/shovel.png")

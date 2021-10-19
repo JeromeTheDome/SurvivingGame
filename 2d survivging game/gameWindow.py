@@ -47,22 +47,35 @@ class Block():
     #start of subclasses
     class Type():
         def determineBreakingSpeed():
-            breakSpeedMod = 1
+            pickBreakSpeedMod = 1
+            shovelBreakSpeedMod = 1
+            axeBreakSpeedMod = 1
             if inventory.Inventory.selectedSlot != None and 51 <= inventory.Inventory.grid[0][inventory.Inventory.selectedSlot] <= 100:
                 if inventory.Inventory.grid[0][inventory.Inventory.selectedSlot] == itemIds.Items.Id.defaultPick:
-                    breakSpeedMod = 0.7
-
+                    pickBreakSpeedMod = 0.15
+                    shovelBreakSpeedMod = 1
+                    axeBreakSpeedMod = 1
+                elif inventory.Inventory.grid[0][inventory.Inventory.selectedSlot] == itemIds.Items.Id.defaultAxe:
+                    pickBreakSpeedMod = 1
+                    shovelBreakSpeedMod = 1
+                    axeBreakSpeedMod = 0.15
+                elif inventory.Inventory.grid[0][inventory.Inventory.selectedSlot] == itemIds.Items.Id.defaultShovel:
+                    pickBreakSpeedMod = 1
+                    shovelBreakSpeedMod = 0.15
+                    axeBreakSpeedMod = 1
             if Block.Grid.getBlockAtLocation2(Block.Grid.blockBreakingPos) == Block.Type.BlockType.dirt:
-                blockBreakSpeed = 10 * breakSpeedMod
+                blockBreakSpeed = 10 * shovelBreakSpeedMod
             elif Block.Grid.getBlockAtLocation2(Block.Grid.blockBreakingPos) == Block.Type.BlockType.grass:
-                blockBreakSpeed = 20 * breakSpeedMod
+                blockBreakSpeed = 20 * shovelBreakSpeedMod
                 print(blockBreakSpeed)
             elif Block.Grid.getBlockAtLocation2(Block.Grid.blockBreakingPos) == Block.Type.BlockType.sand:
-                blockBreakSpeed = 20 * breakSpeedMod
+                blockBreakSpeed = 20 * shovelBreakSpeedMod
             elif Block.Grid.getBlockAtLocation2(Block.Grid.blockBreakingPos) == Block.Type.BlockType.stone:
-                blockBreakSpeed = 50 * breakSpeedMod
+                blockBreakSpeed = 30 * pickBreakSpeedMod
+            elif Block.Grid.getBlockAtLocation2(Block.Grid.blockBreakingPos) == Block.Type.BlockType.wood:
+                blockBreakSpeed = 30 * axeBreakSpeedMod
             else:
-                blockBreakSpeed = 20 * breakSpeedMod
+                blockBreakSpeed = 20 * pickBreakSpeedMod
             return blockBreakSpeed
 
         class BlockType(IntEnum):

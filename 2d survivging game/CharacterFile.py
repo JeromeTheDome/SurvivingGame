@@ -133,7 +133,7 @@ class Character():
         #moves the character left or right
         def update(moveAmount = 1):
             Character.characterDrawLocation[0] = Character.characterLocation[0]*blockSize
-            Character.characterDrawLocation[1] = (Character.characterLocation[1]*blockSize)
+            Character.characterDrawLocation[1] = Character.characterLocation[1]*blockSize
 
         #checks for collisions in a specified position relative to the player and returns true or false
         

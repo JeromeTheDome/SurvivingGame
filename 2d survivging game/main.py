@@ -8,6 +8,8 @@ from CharacterFile import Character
 from inventory import Inventory
 from itemIds import Items
 from pygame.locals import *
+from entity import Entity
+
 """
 to do list:
 make sand edible
@@ -24,6 +26,7 @@ pygame.font.init()
 
 #default values
 inventoryBackGround = pg.image.load("./Images/hud/openInventoryBackground.png")
+entities = []
 
 selectedBox = None
 
@@ -85,6 +88,12 @@ for i in range(worldLength):
 
 Inventory.grid[0][0] = Items.Id.defaultPick
 Inventory.stackAmount[0][0] = 1
+Inventory.grid[0][1] = Items.Id.defaultAxe
+Inventory.stackAmount[0][1] = 1
+Inventory.grid[0][2] = Items.Id.defaultShovel
+Inventory.stackAmount[0][2] = 1
+
+entities += [Entity((500,505),(20,20),0,Items.Id.dirt)]
 
 #main game loop
 while True:
@@ -275,6 +284,13 @@ while True:
         ForeGround.display.blit(myfont.render(str(Inventory.stackAmount[0][i]), False, (150, 150, 150)),(i*48+30,25))
 
   
+
+  """
+  entity logic
+  """
+  for i in range(len(entities)):
+      ForeGround.display.blit(Items.iconList[entities[i].id],(entities[i].drawCoordinates))
+      entities[i].update()
 
 
   """
