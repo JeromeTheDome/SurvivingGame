@@ -1,6 +1,8 @@
 import itemIds
 import CharacterFile
 import pygame
+import gameWindow
+import math
 
 class Entity():
 	yVelocity = 0
@@ -8,9 +10,9 @@ class Entity():
 
 	def __init__(self,worldCoordinates,size,index,id):
 		self.drawCoordinates = [worldCoordinates[0]/32,worldCoordinates[1]/32]
-		self.coordinates = worldCoordinates
-
-		self.boundingBox = pygame.Rect(self.drawCoordinates,size)
+		self.coordinates = [worldCoordinates[0],worldCoordinates[1]]
+		self.size = size
+		self.boundingBox = pygame.Rect(self.drawCoordinates,self.size)
 		self.index = index
 		self.id = id
 		self.texture = itemIds.Items.iconList[self.id]
@@ -18,15 +20,18 @@ class Entity():
 	def update(self):
 		
 		self.drawCoordinates[0] = self.coordinates[0]*32 - CharacterFile.Character.characterLocation[0]*32
-		self.drawCoordinates[1] = self.coordinates[1]*32 - CharacterFile.Character.characterLocation[1]*32
-	def gravityUpdate(self,terminalVelocity = 10,gravity = 5):
-		if self.boundingBox[1] < 200:
+		self.drawCoordinates[1] = self.coordinates[1]*32 - CharacterFile.Character.characterLocation[1]*32+608
+		self.boundingBox = pygame.Rect(self.drawCoordinates,self.size)
+
+	def gravityUpdate(self,terminalVelocity = 1,gravity = 0.2):
+		if gameWindow.Block.BlockMatrix[math.floor(self.coordinates[1]+1)][math.floor(self.coordinates[0])] == gameWindow.Block.Type.BlockType.air:
 			self.yVelocity += gravity
 		if self.yVelocity > terminalVelocity:
 			self.yVelocity = terminalVelocity
-		if self.boundingBox[1] >= 180:
+		if gameWindow.Block.BlockMatrix[math.floor(self.coordinates[1]+1)][ math.floor(self.coordinates[0])] != gameWindow.Block.Type.BlockType.air:
 			self.yVelocity = 0
-		self.boundingBox[1] += self.yVelocity
+			self.coordinates[1] = math.floor(self.coordinates[1])
+		self.coordinates[1] += self.yVelocity
 
 
 	def deleteEntity(self,index):
@@ -38,16 +43,6 @@ class Entity():
 		else:
 			return True
 
-frameNumber = 0
-entities = []
-hue = 0
-
-def delete(index):
-	if len(entities) > index:
-		if len(entities) > 0:
-			entities[index].deleteEntity(index)
-		del entities[index]
-		print(len(entities))
 
 
 	"""

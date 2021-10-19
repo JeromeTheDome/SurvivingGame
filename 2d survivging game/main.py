@@ -93,7 +93,14 @@ Inventory.stackAmount[0][1] = 1
 Inventory.grid[0][2] = Items.Id.defaultShovel
 Inventory.stackAmount[0][2] = 1
 
-entities += [Entity((500,505),(20,20),0,Items.Id.dirt)]
+entities += [Entity((500,490),(16,16),0,Items.Id.dirt)]
+
+def deleteEnt(index,entites):
+	if len(entities) > index:
+		if len(entities) > 0:
+			entities[index].deleteEntity(index)
+		del entities[index]
+		print(len(entities))
 
 #main game loop
 while True:
@@ -255,7 +262,7 @@ while True:
       if yVelocity < 0:
         yVelocity = 0
 
-  Character.Input.inputKey(keyboardInput,iterNum)
+  Character.Input.inputKey(keyboardInput,iterNum,entities)
 
   Character.Pos.update()
   #draw character at the end AFTER(DO NOT FORGOR💀) setting game logic for position
@@ -267,13 +274,17 @@ while True:
   hud/inventory code
   """
 
+  if Inventory.selectedSlot != None and Inventory.stackAmount[0][Inventory.selectedSlot] <= 0:
+    Inventory.grid[0][Inventory.selectedSlot] = Items.Id.empty
+    Inventory.stackAmount[0][Inventory.selectedSlot] = 0
+
   #hud rendering code
   if Inventory.open == True:
       ForeGround.display.blit(inventoryBackGround,(0,0))
       for y in range(1,5):
         for x in range(9):
                 Inventory.Render.renderBox(((x*48),(y*48)),Inventory.grid[y][x])
-                ForeGround.display.blit(myfont.render(str(Inventory.stackAmount[y][x]), False, (0, 0, 0)),(x*48+30,y*48+24))
+                ForeGround.display.blit(myfont.render(str(Inventory.stackAmount[y][x]), False, (150, 150, 150)),(x*48+30,y*48+24))
 
   for i in range(9):
     if i == Inventory.selectedSlot:
@@ -289,8 +300,14 @@ while True:
   entity logic
   """
   for i in range(len(entities)):
-      ForeGround.display.blit(Items.iconList[entities[i].id],(entities[i].drawCoordinates))
-      entities[i].update()
+    ForeGround.display.blit(Items.iconList[entities[i].id],(entities[i].drawCoordinates))
+    entities[i].update()
+    entities[i].gravityUpdate()
+
+    if Character.characterBoundingBox.colliderect(entities[i].boundingBox):
+      Inventory.addItem(entities[i].id)
+      deleteEnt(i,entities)
+
 
 
   """

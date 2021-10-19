@@ -19,7 +19,7 @@ class Character():
     #things defined at top are used in many functions and subclasses
     characterLocation = [math.floor(worldLength/2),501]
     characterDrawLocation = [400,400]
-    characterBoundingBox = [383,505,36,72]
+    characterBoundingBox = pg.Rect(383,505,36,72)
     playerSpeed = 0.3
     characterImage = 1
 
@@ -29,7 +29,7 @@ class Character():
         direction = "right"
         animationSpeed = 2
         blockType = 2 #dirt. .Block dosent exist just right here for some reason
-        def inputKey(keyboardInput,iterNum):
+        def inputKey(keyboardInput,iterNum,entities):
             #blockType logic
             if keyboardInput[pg.K_1]:
                 inventory.Inventory.selectedSlot = 0
@@ -101,7 +101,7 @@ class Character():
                     Character.characterImage = Character.Image.characterStillLeft
                    Character.Input.movingIter = 1
 
-            if keyboardInput[pg.K_F1]:
+            if keyboardInput[pg.K_k]:
                 inventory.Inventory.grid[0][0] = itemIds.Items.Id.stone
                 inventory.Inventory.stackAmount[0][0] = 100
                 inventory.Inventory.grid[0][1] = itemIds.Items.Id.dirt
@@ -113,6 +113,8 @@ class Character():
                 inventory.Inventory.grid[0][4] = itemIds.Items.Id.wood
                 inventory.Inventory.stackAmount[0][4] = 100
             
+            if keyboardInput[pg.K_q]:
+              inventory.Inventory.dropItem(inventory.Inventory.selectedSlot,entities)
            
 
             if keyboardInput[pg.K_LSHIFT]:

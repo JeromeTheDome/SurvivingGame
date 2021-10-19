@@ -1,6 +1,8 @@
 import pygame as pg
 import gameWindow
 from itemIds import Items
+import CharacterFile
+from entity import Entity
 
 class Inventory():
     selectedSlot = None
@@ -34,9 +36,17 @@ class Inventory():
 
         return True
 
-    #def dropItem(slot):
-        #Inventory.grid[0][slot] = Items.Id.empty
-        #Inventory.stackAmount[0][slot] = 0
+    def dropItem(slot,entities):
+      if Inventory.stackAmount[0][slot] > 1:
+        entities += [Entity((CharacterFile.Character.characterLocation[0]+14,CharacterFile.Character.characterLocation[1]-4),(16,16),0,Inventory.grid[0][slot])]
+
+        Inventory.stackAmount[0][slot] -=1
+				
+      elif Inventory.stackAmount[0][slot] <= 1:
+        entities += [Entity((CharacterFile.Character.characterLocation[0]+14,CharacterFile.Character.characterLocation[1]-4),(16,16),0,Inventory.grid[0][slot])]
+
+        Inventory.grid[0][slot] = Items.Id.empty
+        Inventory.stackAmount[0][slot] = 0
 
 
     class Render():
