@@ -7,6 +7,7 @@ import math
 class Entity():
 	yVelocity = 0
 	xVelocity = 0
+	amount = 1
 
 	def __init__(self,worldCoordinates,size,index,id):
 		self.drawCoordinates = [worldCoordinates[0]/32,worldCoordinates[1]/32]

@@ -100,7 +100,6 @@ def deleteEnt(index,entites):
 		if len(entities) > 0:
 			entities[index].deleteEntity(index)
 		del entities[index]
-		print(len(entities))
 
 #main game loop
 while True:
@@ -300,13 +299,21 @@ while True:
   entity logic
   """
   for i in range(len(entities)):
-    ForeGround.display.blit(Items.iconList[entities[i].id],(entities[i].drawCoordinates))
-    entities[i].update()
-    entities[i].gravityUpdate()
+    try:
+        ForeGround.display.blit(Items.iconList[entities[i].id],(entities[i].drawCoordinates))
+        entities[i].update()
+        entities[i].gravityUpdate()
 
-    if Character.characterBoundingBox.colliderect(entities[i].boundingBox):
-      Inventory.addItem(entities[i].id)
-      deleteEnt(i,entities)
+        if Character.characterBoundingBox.colliderect(entities[i].boundingBox):
+          Inventory.addItem(entities[i].id)
+          deleteEnt(i,entities)
+    except:
+        pass
+
+  for event in ev:
+     if event.type == pg.KEYDOWN:
+        if keyboardInput[pg.K_q]:
+              Inventory.dropItem(Inventory.selectedSlot,entities)
 
 
 

@@ -18,7 +18,7 @@ class Inventory():
             grid[y][x] = Items.Id.empty
             stackAmount[y][x] = 0
 
-    def addItem(type):
+    def addItem(type,amount=1):
         #adds to pre existing stack
         for y in range(6):
             for x in range(9):

@@ -113,8 +113,6 @@ class Character():
                 inventory.Inventory.grid[0][4] = itemIds.Items.Id.wood
                 inventory.Inventory.stackAmount[0][4] = 100
             
-            if keyboardInput[pg.K_q]:
-              inventory.Inventory.dropItem(inventory.Inventory.selectedSlot,entities)
            
 
             if keyboardInput[pg.K_LSHIFT]:
