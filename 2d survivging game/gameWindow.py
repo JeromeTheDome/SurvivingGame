@@ -44,6 +44,8 @@ class BackGround():
         X = X*15
         surface.blit(image,(X,0))
 
+    bgBlockOverlay = pg.image.load("./Images/background images/bgOverlay.png").convert_alpha()
+
 
 class Block():
     #start of subclasses
@@ -108,9 +110,6 @@ class Block():
     global numBlocks
     global worldHeight
     #all of these are defined at the top as many subclasses of block rely on them
-
-    #defines air for default block type
-    air = pg.image.load("./Images/block icons/air.png")
 
     #list variable for storing block data. structure is BlockMatrix[Horizontal Columns(uses y input)][Block in column(uses x input)][blockType]
     BlockMatrix = [[[]for i in range(worldLength +1)]for i in range(worldHeight)]
@@ -193,7 +192,7 @@ class Block():
     class Renderer():
         global blockSize
         #takes coordinates from 0 to 20 on both axis
-        def drawBlock(surface,blockType,position):
+        def drawBlock(surface,blockType,position,bg = False):
 
             #translate grid based input into screen cords
             x = position[0] - Character.characterLocation[0]
@@ -204,6 +203,9 @@ class Block():
 
             surface.blit(blockType,(x,y))
 
+            if bg == True:
+                surface.blit(BackGround.bgBlockOverlay,(x,y))
+
 
         def drawBreakingOverlay(blockBreakNumber):
             if blockBreakNumber > 1 and Block.Grid.getBlockAtLocation2(Block.Grid.blockBreakingPos) != Block.Type.BlockType.air:
@@ -211,5 +213,7 @@ class Block():
         def drawBlocksOnScreen():
             for y in range(math.floor(Character.characterLocation[1]-20),math.floor(Character.characterLocation[1]+7)):
                 for x in range(math.floor(Character.characterLocation[0]),math.floor(Character.characterLocation[0]+26)): 
+                        if Block.bgBlockMatrix[y][x] != Block.Type.BlockType.air and Block.BlockMatrix[y][x] == Block.Type.BlockType.air:
+                            Block.Renderer.drawBlock(ForeGround.display,Block.Type.List[Block.bgBlockMatrix[y][x]],(x,y),True)
                         Block.Renderer.drawBlock(ForeGround.display,Block.Type.List[Block.BlockMatrix[y][x]],(x,y))
-                        Block.Renderer.drawBlock(ForeGround.display,Block.Type.List[Block.bgBlockMatrix[y][x]],(x,y))
+                        

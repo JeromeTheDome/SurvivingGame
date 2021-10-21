@@ -73,8 +73,11 @@ bgImage = BackGround.bgImage("./Images/background images/cloud.png").convert()
 #sets up bottom squares
 for x in range(worldLength):
     for y in range(10,500):
-       Block.Grid.placeBlock((x,500 + y),Block.Type.BlockType.stone,True)
-       Block.Grid.placeBlockBg((x,500 + y),Block.Type.BlockType.stone,True)
+       if not(0.135 <= noise.snoise2(x*0.07,y*0.07,repeaty=999999,repeatx=999999,octaves = 1,persistence=1,lacunarity=10) <= 0.7):
+        Block.Grid.placeBlock((x,500 + y),Block.Type.BlockType.stone,True)
+        Block.Grid.placeBlockBg((x,500 + y),Block.Type.BlockType.stone,True)
+       else:
+           Block.Grid.placeBlockBg((x,500 + y),Block.Type.BlockType.stone,True)
 
 seed = random.randint(0,500)
 
@@ -117,9 +120,16 @@ for x in range(worldLength):
             #Block.Grid.placeBlock((x,y-i),Block.Type.BlockType.log,True)
 
     Block.Grid.placeBlock((x,y),Block.Type.BlockType.grass,True)
+    Block.Grid.placeBlock((x,y+1),Block.Type.BlockType.dirt,True)
+    Block.Grid.placeBlock((x,y+2),Block.Type.BlockType.dirt,True)
+    Block.Grid.placeBlock((x,y+3),Block.Type.BlockType.dirt,True)
+    Block.Grid.placeBlock((x,y+4),Block.Type.BlockType.dirt,True)
+
 
     for y in range(y,510):
-       Block.Grid.placeBlock((x,y),Block.Type.BlockType.dirt,True)
+       if not(0 <= noise.snoise2(x*0.07,y*0.07,repeaty=999999,repeatx=999999,octaves = 1,persistence=1) <= 0.6):
+        Block.Grid.placeBlock((x,y),Block.Type.BlockType.dirt,True)
+       Block.Grid.placeBlockBg((x,y),Block.Type.BlockType.dirt,True)
 
 
 

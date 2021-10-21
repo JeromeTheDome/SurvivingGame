@@ -114,7 +114,7 @@ class Character():
                 inventory.Inventory.stackAmount[0][4] = 100
                 inventory.Inventory.grid[0][5] = itemIds.Items.Id.log
                 inventory.Inventory.stackAmount[0][5] = 100
-                inventory.Inventory.grid[0][6] = itemIds.Items.Id.log
+                inventory.Inventory.grid[0][6] = itemIds.Items.Id.leaves
                 inventory.Inventory.stackAmount[0][6] = 100
             
            
