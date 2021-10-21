@@ -17,7 +17,7 @@ numBlocks = int(800/blockSize)
 class Character():
     global worldLength
     #things defined at top are used in many functions and subclasses
-    characterLocation = [math.floor(worldLength/2),501]
+    characterLocation = [math.floor(worldLength/2),500]
     characterDrawLocation = [400,400]
     characterBoundingBox = pg.Rect(383,505,36,72)
     playerSpeed = 0.3
@@ -112,6 +112,10 @@ class Character():
                 inventory.Inventory.stackAmount[0][3] = 100
                 inventory.Inventory.grid[0][4] = itemIds.Items.Id.wood
                 inventory.Inventory.stackAmount[0][4] = 100
+                inventory.Inventory.grid[0][5] = itemIds.Items.Id.log
+                inventory.Inventory.stackAmount[0][5] = 100
+                inventory.Inventory.grid[0][6] = itemIds.Items.Id.log
+                inventory.Inventory.stackAmount[0][6] = 100
             
            
 
@@ -125,8 +129,8 @@ class Character():
     class Image():
         global blockSize
         #character still images
-        characterStillRight = pg.image.load("./Images/Character Icons/stillRight.png")
-        characterStillLeft = pg.image.load("./Images/Character Icons/stillLeft.png")
+        characterStillRight = pg.image.load("./Images/Character Icons/stillRight.png").convert_alpha()
+        characterStillLeft = pg.image.load("./Images/Character Icons/stillLeft.png").convert_alpha()
 
     class Pos():
 
@@ -151,7 +155,7 @@ class Character():
                     if(gameWindow.Block.BlockMatrix[math.floor(Character.characterLocation[1])-1+yOffset][math.floor(Character.characterLocation[0])+11+xOffset] != gameWindow.Block.Type.BlockType.air):
                         return True
                 elif direction == "above":
-                    if (gameWindow.Block.BlockMatrix[math.floor(Character.characterLocation[1])-4+yOffset][math.floor(Character.characterLocation[0])+12+xOffset] != gameWindow.Block.Type.BlockType.air):
+                    if (gameWindow.Block.BlockMatrix[math.floor(Character.characterLocation[1])-4+yOffset][math.floor(Character.characterLocation[0])+12+xOffset] != gameWindow.Block.Type.BlockType.air) :
                         return True
                 else:
                     return False
@@ -183,9 +187,9 @@ class Character():
         def SpritePick(Direction,AnimationFrameIter):
             #used to decide which frame to display for character 
             if Direction == "left":
-                return pg.image.load("./Images/Character Icons/movingLeftFrame"+str(AnimationFrameIter)+".png")
+                return pg.image.load("./Images/Character Icons/movingLeftFrame"+str(AnimationFrameIter)+".png").convert_alpha()
             elif Direction == "right":
-                return pg.image.load("./Images/Character Icons/movingRightFrame"+str(AnimationFrameIter)+".png")
+                return pg.image.load("./Images/Character Icons/movingRightFrame"+str(AnimationFrameIter)+".png").convert_alpha()
 
 
         def draw(surface,imageIn,x,y):

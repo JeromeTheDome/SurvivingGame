@@ -9,23 +9,24 @@ from inventory import Inventory
 from itemIds import Items
 from pygame.locals import *
 from entity import Entity
+import noise
+import random
 
 """
 to do list:
 make sand edible
-make tools
 """
 """
 notes: 
-tools will act as a fractional multiplier to the break speed variable causing the time to break to go down when a given tool is equipped
-offset from pygame rectangels came from calling the function after the player logic
 """
 
 pg = pygame
 pygame.font.init()
 
+#inits
+
 #default values
-inventoryBackGround = pg.image.load("./Images/hud/openInventoryBackground.png")
+inventoryBackGround = pg.image.load("./Images/hud/openInventoryBackground.png").convert()
 entities = []
 
 selectedBox = None
@@ -66,23 +67,59 @@ iterNum = 0
 characterX = 10
 characterY = 10
 
-#inits
-ForeGround.__init__(1)
-
 #defines background image
-bgImage = BackGround.bgImage("./Images/background images/cloud.png")
+bgImage = BackGround.bgImage("./Images/background images/cloud.png").convert()
 
 #sets up bottom squares
-for i in range(worldLength):
-   Block.Grid.placeBlock((i,500),Block.Type.BlockType.grass,True)
-   Block.Grid.placeBlock((i,501),Block.Type.BlockType.dirt,True)
-   Block.Grid.placeBlock((i,502),Block.Type.BlockType.dirt,True)
-   Block.Grid.placeBlock((i,503),Block.Type.BlockType.dirt,True)
-   Block.Grid.placeBlock((i,504),Block.Type.BlockType.dirt,True)
-   Block.Grid.placeBlock((i,505),Block.Type.BlockType.dirt,True)
-for i in range(worldLength):
-    for g in range(5,500):
-       Block.Grid.placeBlock((i,500 + g),Block.Type.BlockType.stone,True)
+for x in range(worldLength):
+    for y in range(10,500):
+       Block.Grid.placeBlock((x,500 + y),Block.Type.BlockType.stone,True)
+       Block.Grid.placeBlockBg((x,500 + y),Block.Type.BlockType.stone,True)
+
+seed = random.randint(0,500)
+
+for x in range(worldLength):
+    frequency = 0.2
+
+    treeTrue = random.randint(0,10)
+
+    y =  int(noise.pnoise1((x+seed)*0.07,repeat=999999999)*5)+495
+
+    if x == 500:
+        Character.characterLocation[1] = y-2
+
+
+    if treeTrue == 5:
+        Block.Grid.placeBlockBg((x,y-1),Block.Type.BlockType.log,True)
+        Block.Grid.placeBlockBg((x,y-2),Block.Type.BlockType.log,True)
+        Block.Grid.placeBlockBg((x,y-3),Block.Type.BlockType.log,True)
+        Block.Grid.placeBlockBg((x,y-4),Block.Type.BlockType.log,True)
+
+        #first row of leaves
+        Block.Grid.placeBlockBg((x-1,y-5),Block.Type.BlockType.leaves,True)
+        Block.Grid.placeBlockBg((x-2,y-5),Block.Type.BlockType.leaves,True)
+        Block.Grid.placeBlockBg((x,y-5),Block.Type.BlockType.leaves,True)
+        Block.Grid.placeBlockBg((x+1,y-5),Block.Type.BlockType.leaves,True)
+        Block.Grid.placeBlockBg((x+2,y-5),Block.Type.BlockType.leaves,True)
+        #second row
+        Block.Grid.placeBlockBg((x-1,y-6),Block.Type.BlockType.leaves,True)
+        Block.Grid.placeBlockBg((x-2,y-6),Block.Type.BlockType.leaves,True)
+        Block.Grid.placeBlockBg((x,y-6),Block.Type.BlockType.leaves,True)
+        Block.Grid.placeBlockBg((x+1,y-6),Block.Type.BlockType.leaves,True)
+        Block.Grid.placeBlockBg((x+2,y-6),Block.Type.BlockType.leaves,True)
+        #third row
+        Block.Grid.placeBlockBg((x-1,y-7),Block.Type.BlockType.leaves,True)
+        Block.Grid.placeBlockBg((x,y-7),Block.Type.BlockType.leaves,True)
+        Block.Grid.placeBlockBg((x+1,y-7),Block.Type.BlockType.leaves,True)
+
+        for i in range(random.randint(5,7)):
+            pass
+            #Block.Grid.placeBlock((x,y-i),Block.Type.BlockType.log,True)
+
+    Block.Grid.placeBlock((x,y),Block.Type.BlockType.grass,True)
+
+    for y in range(y,510):
+       Block.Grid.placeBlock((x,y),Block.Type.BlockType.dirt,True)
 
 
 
@@ -93,20 +130,21 @@ Inventory.stackAmount[0][1] = 1
 Inventory.grid[0][2] = Items.Id.defaultShovel
 Inventory.stackAmount[0][2] = 1
 
-entities += [Entity((500,490),(16,16),0,Items.Id.dirt)]
-
 def deleteEnt(index,entites):
 	if len(entities) > index:
 		if len(entities) > 0:
 			entities[index].deleteEntity(index)
 		del entities[index]
 
+clock = pygame.time.Clock()
 #main game loop
 while True:
   #gets pygame events
   ev = pg.event.get()
   keyboardInput = pg.key.get_pressed()
   pygame.mouse.set_cursor((8,8),(0,0),(0,0,0,0,0,0,0,0),(0,0,0,0,0,0,0,0))
+  clock.tick(60)
+  print(int(clock.get_fps()))
   #START
 
   #checks mouse input
@@ -164,21 +202,22 @@ while True:
   #right click
   if pg.mouse.get_pressed(3) == (True,False,False):
 
-    if Block.Grid.blockBreakingPos != Block.Grid.blockBreakingPosLast:
-       blockBreakNumber = 1
+    if 224 < ForeGround.getMousePos()[0] < 576 and 352 < ForeGround.getMousePos()[1] < 736:
+        if Block.Grid.blockBreakingPos != Block.Grid.blockBreakingPosLast:
+           blockBreakNumber = 1
 
-    Block.Grid.SetBlockBreakCoord((ForeGround.getMousePos()[0]+Character.characterDrawLocation[0], (ForeGround.getMousePos()[1]+Character.characterDrawLocation[1])-600))
+        Block.Grid.SetBlockBreakCoord((ForeGround.getMousePos()[0]+Character.characterDrawLocation[0], (ForeGround.getMousePos()[1]+Character.characterDrawLocation[1])-600))
 
-    blockBreakSpeed = Block.Type.determineBreakingSpeed()
-    if Block.Grid.getBlockAtLocation2(Block.Grid.blockBreakingPos) == Block.Type.BlockType.air:
+        blockBreakSpeed = Block.Type.determineBreakingSpeed()
+        if Block.Grid.getBlockAtLocation2(Block.Grid.blockBreakingPos) == Block.Type.BlockType.air:
+                blockBreakNumber = 1
+
+        if iterNum%blockBreakSpeed == 0:
+           blockBreakNumber += 1
+        if blockBreakNumber%6 == 0:
+            Inventory.addItem(Block.Grid.getBlockAtLocation2(Block.Grid.blockBreakingPos))
+            Block.Grid.breakBlock((ForeGround.getMousePos()[0],ForeGround.getMousePos()[1]),1)
             blockBreakNumber = 1
-
-    if iterNum%blockBreakSpeed == 0:
-       blockBreakNumber += 1
-    if blockBreakNumber%6 == 0:
-        Inventory.addItem(Block.Grid.getBlockAtLocation2(Block.Grid.blockBreakingPos))
-        Block.Grid.breakBlock((ForeGround.getMousePos()[0],ForeGround.getMousePos()[1]))
-        blockBreakNumber = 1
   else:
         blockBreakNumber = 1    
 
@@ -219,7 +258,6 @@ while True:
        
   Block.Renderer.drawBreakingOverlay(blockBreakNumber)
              
-  #ForeGround.display.blit(pg.image.load("./Images/block icons/breakingOverlays/stage1.png"),((math.floor(ForeGround.getMousePos()[0]/blockSize)+Character.characterLocation[0]%1)*blockSize,(math.floor(ForeGround.getMousePos()[1]/blockSize)+Character.characterLocation[1]%1)*blockSize))
   """
   player logic
   """
@@ -243,15 +281,15 @@ while True:
 
   #keyboard input
 
-  for event in ev:
-     if event.type == pg.KEYDOWN:
-        if keyboardInput[pg.K_SPACE]:
-            if Character.Pos.CollisionCheck("under",False,1) == True:
-                yVelocity -= 1
+  #for event in ev:
+     #if event.type == pg.KEYDOWN:
   for event in ev:
      if event.type == pg.KEYDOWN:
         if keyboardInput[pg.K_TAB]:
             Inventory.open = not Inventory.open
+     if keyboardInput[pg.K_SPACE]:
+        if Character.Pos.CollisionCheck("under",False,1) == True:
+         yVelocity -= 0.5
             
 
   if Character.Pos.CollisionCheck("under",False,1,-3) == True and Character.Input.direction == "right":

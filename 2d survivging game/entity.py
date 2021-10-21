@@ -45,7 +45,3 @@ class Entity():
 			return True
 
 
-
-	"""
-	delete funciton can be run whenever i want to get rid of an entity. i can use a for loop to iterate through the list of entites and check for colisisions with an item pickup hitbox and if the collision returns true then i can add an item with that id and quantity to the players inventory then run the delete function on the entity.
-	"""

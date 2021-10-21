@@ -1,22 +1,7 @@
 import pygame
 import math
-from enum import IntEnum
-from CharacterFile import Character
 from pygame.locals import *
-import inventory
-import itemIds
-
 pg = pygame
-
-worldLength = 1000
-worldHeight = 1000
-
-yCharacterRenderOffset = 72
-
-
-#blockSize used for rendering
-blockSize = 32
-numBlocks = int(800/blockSize)
 
 class ForeGround():
   cursorIcon = pg.image.load("./Images/background images/cursor.png")
@@ -29,6 +14,23 @@ class ForeGround():
   def getMousePos():
    mousePos = [pg.mouse.get_pos()[0], pg.mouse.get_pos()[1]]
    return mousePos
+
+ForeGround.__init__(1)
+
+from enum import IntEnum
+from CharacterFile import Character
+import inventory
+import itemIds
+
+worldLength = 1000
+worldHeight = 1000
+
+yCharacterRenderOffset = 72
+
+
+#blockSize used for rendering
+blockSize = 32
+numBlocks = int(800/blockSize)
          
 
 class BackGround():
@@ -67,15 +69,18 @@ class Block():
                 blockBreakSpeed = 10 * shovelBreakSpeedMod
             elif Block.Grid.getBlockAtLocation2(Block.Grid.blockBreakingPos) == Block.Type.BlockType.grass:
                 blockBreakSpeed = 20 * shovelBreakSpeedMod
-                print(blockBreakSpeed)
             elif Block.Grid.getBlockAtLocation2(Block.Grid.blockBreakingPos) == Block.Type.BlockType.sand:
                 blockBreakSpeed = 20 * shovelBreakSpeedMod
             elif Block.Grid.getBlockAtLocation2(Block.Grid.blockBreakingPos) == Block.Type.BlockType.stone:
                 blockBreakSpeed = 30 * pickBreakSpeedMod
             elif Block.Grid.getBlockAtLocation2(Block.Grid.blockBreakingPos) == Block.Type.BlockType.wood:
                 blockBreakSpeed = 30 * axeBreakSpeedMod
+            elif Block.Grid.getBlockAtLocation2(Block.Grid.blockBreakingPos) == Block.Type.BlockType.log:
+                blockBreakSpeed = 30 * axeBreakSpeedMod
+            elif Block.Grid.getBlockAtLocation2(Block.Grid.blockBreakingPos) == Block.Type.BlockType.leaves:
+                blockBreakSpeed = 5
             else:
-                blockBreakSpeed = 20 * pickBreakSpeedMod
+                blockBreakSpeed = 20
             return blockBreakSpeed
 
         class BlockType(IntEnum):
@@ -85,15 +90,19 @@ class Block():
             grass = 3
             sand = 4
             wood = 5
-            lastentry = 6
+            log = 6
+            leaves = 7
+            lastentry = 8
         
         List = [pg.image] * BlockType.lastentry
-        List[BlockType.air] = pg.image.load("./Images/block icons/air.png")
-        List[BlockType.stone] = pg.image.load("./Images/block icons/stone.png")
-        List[BlockType.dirt] = pg.image.load("./Images/block icons/dirt.png")
-        List[BlockType.grass] = pg.image.load("./Images/block icons/grass.png")
-        List[BlockType.sand] = pg.image.load("./Images/block icons/sand.png")
-        List[BlockType.wood] = pg.image.load("./Images/block icons/wood.png")
+        List[BlockType.air] = pg.image.load("./Images/block icons/air.png").convert_alpha()
+        List[BlockType.stone] = pg.image.load("./Images/block icons/stone.png").convert()
+        List[BlockType.dirt] = pg.image.load("./Images/block icons/dirt.png").convert()
+        List[BlockType.grass] = pg.image.load("./Images/block icons/grass.png").convert()
+        List[BlockType.sand] = pg.image.load("./Images/block icons/sand.png").convert()
+        List[BlockType.wood] = pg.image.load("./Images/block icons/wood.png").convert()
+        List[BlockType.log] = pg.image.load("./Images/block icons/log.png").convert()
+        List[BlockType.leaves] = pg.image.load("./Images/block icons/leaves.png").convert_alpha()
 
     global worldLength
     global numBlocks
@@ -105,11 +114,13 @@ class Block():
 
     #list variable for storing block data. structure is BlockMatrix[Horizontal Columns(uses y input)][Block in column(uses x input)][blockType]
     BlockMatrix = [[[]for i in range(worldLength +1)]for i in range(worldHeight)]
+    bgBlockMatrix = [[[]for i in range(worldLength +1)]for i in range(worldHeight)]
 
     #sets every block to air
     for y in range(worldHeight):
         for x in range(worldLength):
             BlockMatrix[y][x] = Type.BlockType.air
+            bgBlockMatrix[y][x] = Type.BlockType.air
 
 
 
@@ -143,13 +154,31 @@ class Block():
                 y = position[1]
             if Block.BlockMatrix[y][x] == Block.Type.BlockType.air:
                 Block.BlockMatrix[y][x] = blockType
-        def breakBlock(position):
+
+        def placeBlockBg(position,blockType,skipRowTranslation = False):
+            #translate grid based input into screen cords
+            if skipRowTranslation != True:
+
+                x = math.floor((position[0]+Character.characterDrawLocation[0])/blockSize)
+                y = math.floor((position[1]+Character.characterDrawLocation[1]-600)/blockSize)
+            else:
+                x = position[0]
+                y = position[1]
+            if Block.bgBlockMatrix[y][x] == Block.Type.BlockType.air:
+                Block.bgBlockMatrix[y][x] = blockType
+        def breakBlock(position,layer = 0):
             #translate grid based input into screen cords
             
             x = math.floor((position[0]+Character.characterDrawLocation[0])/blockSize)
             y = math.floor((position[1]+Character.characterDrawLocation[1]-608)/blockSize)
-         
-            Block.BlockMatrix[y][x] = 0
+            
+            if layer == 1:
+                Block.BlockMatrix[y][x] = 0
+            elif layer == 2:
+                Block.bgBlockMatrix[y][x] = 0
+            else:
+                Block.BlockMatrix[y][x] = 0
+                Block.bgBlockMatrix[y][x] = 0
 
         def getBlockAtLocation(location):
 
@@ -178,8 +207,9 @@ class Block():
 
         def drawBreakingOverlay(blockBreakNumber):
             if blockBreakNumber > 1 and Block.Grid.getBlockAtLocation2(Block.Grid.blockBreakingPos) != Block.Type.BlockType.air:
-                   Block.Renderer.drawBlock(ForeGround.display,pg.image.load("./Images/block icons/breakingOverlays/stage"+str(blockBreakNumber)+".png"),(Block.Grid.blockBreakingPos[0],Block.Grid.blockBreakingPos[1]))
+                   Block.Renderer.drawBlock(ForeGround.display,pg.image.load("./Images/block icons/breakingOverlays/stage"+str(blockBreakNumber)+".png").convert_alpha(),(Block.Grid.blockBreakingPos[0],Block.Grid.blockBreakingPos[1]))
         def drawBlocksOnScreen():
             for y in range(math.floor(Character.characterLocation[1]-20),math.floor(Character.characterLocation[1]+7)):
                 for x in range(math.floor(Character.characterLocation[0]),math.floor(Character.characterLocation[0]+26)): 
                         Block.Renderer.drawBlock(ForeGround.display,Block.Type.List[Block.BlockMatrix[y][x]],(x,y))
+                        Block.Renderer.drawBlock(ForeGround.display,Block.Type.List[Block.bgBlockMatrix[y][x]],(x,y))

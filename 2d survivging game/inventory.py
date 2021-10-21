@@ -50,8 +50,8 @@ class Inventory():
 
 
     class Render():
-        inventoryBox = pg.image.load("./Images/hud/inventoryBox.png")
-        inventoryBoxSelected = pg.image.load("./Images/hud/inventoryBoxSelected.png")
+        inventoryBox = pg.image.load("./Images/hud/inventoryBox.png").convert_alpha()
+        inventoryBoxSelected = pg.image.load("./Images/hud/inventoryBoxSelected.png").convert_alpha()
 
         def renderBox(coordinates,itemId,active = False):
             if active == False:
