@@ -71,15 +71,16 @@ characterY = 10
 bgImage = BackGround.bgImage("./Images/background images/cloud.png").convert()
 
 #sets up bottom squares
+seed = random.randint(0,500)
+
 for x in range(worldLength):
     for y in range(10,500):
-       if not(0.135 <= noise.snoise2(x*0.07,y*0.07,repeaty=999999,repeatx=999999,octaves = 1,persistence=1,lacunarity=10) <= 0.7):
+       if not(0.135 <= noise.snoise2((x+seed)*0.07,(y+seed)*0.07,repeaty=999999,repeatx=999999,octaves = 1,persistence=1,lacunarity=10) <= 0.7):
         Block.Grid.placeBlock((x,500 + y),Block.Type.BlockType.stone,True)
         Block.Grid.placeBlockBg((x,500 + y),Block.Type.BlockType.stone,True)
        else:
            Block.Grid.placeBlockBg((x,500 + y),Block.Type.BlockType.stone,True)
 
-seed = random.randint(0,500)
 
 for x in range(worldLength):
     frequency = 0.2
@@ -153,8 +154,6 @@ while True:
   ev = pg.event.get()
   keyboardInput = pg.key.get_pressed()
   pygame.mouse.set_cursor((8,8),(0,0),(0,0,0,0,0,0,0,0),(0,0,0,0,0,0,0,0))
-  clock.tick(60)
-  print(int(clock.get_fps()))
   #START
 
   #checks mouse input
@@ -230,6 +229,26 @@ while True:
             blockBreakNumber = 1
   else:
         blockBreakNumber = 1    
+  if pg.mouse.get_pressed(3) == (True,False,False):
+
+    if 224 < ForeGround.getMousePos()[0] < 576 and 352 < ForeGround.getMousePos()[1] < 736:
+        if Block.Grid.blockBreakingPos != Block.Grid.blockBreakingPosLast:
+           blockBreakNumber = 1
+
+        Block.Grid.SetBlockBreakCoord((ForeGround.getMousePos()[0]+Character.characterDrawLocation[0], (ForeGround.getMousePos()[1]+Character.characterDrawLocation[1])-600))
+
+        blockBreakSpeed = Block.Type.determineBreakingSpeed()
+        if Block.Grid.getBlockAtLocation2(Block.Grid.blockBreakingPos) == Block.Type.BlockType.air:
+                blockBreakNumber = 1
+
+        if iterNum%blockBreakSpeed == 0:
+           blockBreakNumber += 1
+        if blockBreakNumber%6 == 0:
+            Inventory.addItem(Block.Grid.getBlockAtLocation2(Block.Grid.blockBreakingPos))
+            Block.Grid.breakBlock((ForeGround.getMousePos()[0],ForeGround.getMousePos()[1]),1)
+            blockBreakNumber = 1
+  else:
+        blockBreakNumber = 1   
 
   if pg.mouse.get_pressed(3) == (False,True,False) and Inventory.selectedSlot != None and Block.Grid.getBlockAtLocation((ForeGround.getMousePos()[0],ForeGround.getMousePos()[1])) != Block.Type.BlockType.air:
       Inventory.grid[0][Inventory.selectedSlot] = Block.Grid.getBlockAtLocation((ForeGround.getMousePos()[0],ForeGround.getMousePos()[1]))
@@ -300,6 +319,7 @@ while True:
      if keyboardInput[pg.K_SPACE]:
         if Character.Pos.CollisionCheck("under",False,1) == True:
          yVelocity -= 0.5
+         print(yVelocity)
             
 
   if Character.Pos.CollisionCheck("under",False,1,-3) == True and Character.Input.direction == "right":
