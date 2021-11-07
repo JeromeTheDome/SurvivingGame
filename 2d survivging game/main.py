@@ -4,6 +4,7 @@ import math
 from gameWindow import ForeGround
 from gameWindow import BackGround
 from gameWindow import Block
+from gameWindow import Gui
 from CharacterFile import Character
 from inventory import Inventory
 from itemIds import Items
@@ -11,6 +12,7 @@ from pygame.locals import *
 from entity import Entity
 import noise
 import random
+import os
 
 """
 to do list:
@@ -26,6 +28,8 @@ pygame.font.init()
 #inits
 
 #default values
+textBoxText = ''
+activeTextBox = None
 inventoryBackGround = pg.image.load("./Images/hud/openInventoryBackground.png").convert()
 entities = []
 
@@ -132,9 +136,7 @@ def generateWorld():
             if not(0 <= noise.snoise2(x*0.07,y*0.07,repeaty=999999,repeatx=999999,octaves = 1,persistence=1) <= 0.6):
                 Block.Grid.placeBlock((x,y),Block.Type.BlockType.dirt,True)
             Block.Grid.placeBlockBg((x,y),Block.Type.BlockType.dirt,True)
-generateWorld()
-Block.Grid.loadWorld("world.txt")
-
+#Block.Grid.loadWorld("cummy world")
 
 Inventory.grid[0][0] = Items.Id.defaultPick
 Inventory.stackAmount[0][0] = 1
@@ -153,19 +155,101 @@ clock = pygame.time.Clock()
 
 mainMenu = 1
 mainGame = 2
+loadGameScene= 3
+createWorld = 4
 
-scene = mainGame
+scene = mainMenu
 
 while True:
+    frame = 0
     #main menu scene
     while scene == mainMenu:
         ev = pg.event.get()
+        pg.draw.rect(ForeGround.display,(255,255,255),pg.Rect((0,0),(800,800)))
         loadGameButton = pg.Rect((50,350),(300,100))
-        pg.draw.rect(ForeGround.display,(0,255,255),loadGameButton)
-        newGameButton = pg.Rect((400,350),(300,100))
-        pg.draw.rect(ForeGround.display,(0,255,0),newGameButton)
-        pg.display.flip()
+        ForeGround.display.blit(Gui.loadGameButton,(50,350))
+        if loadGameButton.collidepoint(ForeGround.getMousePos()[0],ForeGround.getMousePos()[1]) and pg.mouse.get_pressed(3) == (True,False,False):
+            scene = loadGameScene
 
+        newGameButton = pg.Rect((400,350),(300,100))
+        ForeGround.display.blit(Gui.newGameButton,(400,350))
+        if newGameButton.collidepoint(ForeGround.getMousePos()[0],ForeGround.getMousePos()[1]) and pg.mouse.get_pressed(3) == (True,False,False):
+            scene = createWorld
+        pg.display.flip()
+    
+    #load game screen
+    while scene == loadGameScene:
+        ev = pg.event.get()
+        pg.draw.rect(ForeGround.display,(0,0,0),pg.Rect((0,0),(800,800)))
+        worlds = os.listdir("./saves")
+        for i in range(len(worlds)):
+            try:
+                if str(worlds[i])[-7]+str(worlds[i])[-6]+str(worlds[i])[-5] == "_bg":
+                    worlds.pop(i)
+                if str(worlds[i])[-4]+str(worlds[i])[-3]+str(worlds[i])[-2]+str(worlds[i])[-1] == "json":
+                    worlds.pop(i)
+            except:
+                pass
+        backButton = pg.Rect((20,30),(50,50))
+        pg.draw.rect(ForeGround.display,(180,180,180),backButton)
+        backButtonText = myfont.render("Back", False, (0, 0, 0))
+        ForeGround.display.blit(backButtonText,(20,20))
+        for i in range(len(worlds)):
+            worldButton = pg.Rect((200,(395+len(worlds)*15)-i*30),(400,20))
+            pg.draw.rect(ForeGround.display,(180,180,180),worldButton)
+            fileNameText = myfont.render(str(worlds[i]), False, (0, 0, 0))
+            fileNameTextWidth = fileNameText.get_rect().width
+            ForeGround.display.blit(fileNameText,(400-(fileNameTextWidth/2),(395+len(worlds)*15)-i*30))
+            for event in ev:
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if worldButton.collidepoint(ForeGround.getMousePos()[0],ForeGround.getMousePos()[1]) and pg.mouse.get_pressed(3) == (True,False,False):
+                        Block.Grid.loadWorld(str(worlds[i][:-4]))
+                        scene = mainGame
+                        break
+                    elif backButton.collidepoint(ForeGround.getMousePos()[0],ForeGround.getMousePos()[1]) and pg.mouse.get_pressed(3) == (True,False,False):
+                        scene = mainMenu
+            
+
+        pg.display.flip()
+    while scene == createWorld:
+        ev = pg.event.get()
+        pg.draw.rect(ForeGround.display,(0,0,0),pg.Rect((0,0),(800,800)))
+        textBoxes = [pg.Rect((350, 375), (100, 50))]
+        createWorldButton = pg.Rect((350, 450), (100, 50))
+        createWorldButtonText = myfont.render("create world", True, (255, 255, 255))
+        pg.draw.rect(ForeGround.display,(180,180,180),createWorldButton)
+        ForeGround.display.blit(createWorldButtonText,(350,450))
+        for i in range(len(textBoxes)):
+            boxColor = (180,180,180)
+            for event in ev:
+                    if event.type == pygame.MOUSEBUTTONDOWN:
+                        if textBoxes[i].collidepoint(ForeGround.getMousePos()[0],ForeGround.getMousePos()[1]) and pg.mouse.get_pressed(3) == (True,False,False):
+                            activeTextBox = i
+
+            if activeTextBox == i:
+                boxColor = (200,200,200)
+            pg.draw.rect(ForeGround.display,boxColor,textBoxes[i])
+
+        for event in ev:
+            if event.type == pygame.KEYDOWN:
+
+                if event.key == pygame.K_BACKSPACE:
+                    textBoxText = textBoxText[:-1]
+                elif event.key == pygame.K_RETURN:
+                    textBoxText = ''
+                else:
+                    textBoxText += event.unicode
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                        if createWorldButton.collidepoint(ForeGround.getMousePos()[0],ForeGround.getMousePos()[1]) and pg.mouse.get_pressed(3) == (True,False,False):
+                            generateWorld()
+                            Block.openWorld = textBoxText
+                            scene = mainGame
+
+        textBoxTextSurface = myfont.render(textBoxText, True, (255, 255, 255))
+        if activeTextBox != None:
+            ForeGround.display.blit(textBoxTextSurface,(textBoxes[activeTextBox]))
+        frame += 1
+        pg.display.flip()
     #main game loop
     while scene == mainGame:
         #gets pygame events
@@ -178,10 +262,14 @@ while True:
 
         #checks mouse input
         if pg.mouse.get_pressed(3) == (False,False,True):
-            if Block.Grid.getBlockAtLocation((ForeGround.getMousePos()[0],ForeGround.getMousePos()[1])) == Block.Type.BlockType.air:
-                Inventory.stackAmount[0][Inventory.selectedSlot] -= 1
-            if Inventory.grid[0][Inventory.selectedSlot] != None:
-                Block.Grid.placeBlock((ForeGround.getMousePos()[0],ForeGround.getMousePos()[1]),Inventory.grid[0][Inventory.selectedSlot])
+            try:
+                if Block.Grid.getBlockAtLocation((ForeGround.getMousePos()[0],ForeGround.getMousePos()[1])) == Block.Type.BlockType.air:
+                    Inventory.stackAmount[0][Inventory.selectedSlot] -= 1
+
+                    if Inventory.grid[0][Inventory.selectedSlot] != None:
+                        Block.Grid.placeBlock((ForeGround.getMousePos()[0],ForeGround.getMousePos()[1]),Inventory.grid[0][Inventory.selectedSlot])
+            except:
+                pass
 
         #right click
         if pg.mouse.get_pressed(3) == (True,False,False):
@@ -223,8 +311,6 @@ while True:
                                         Inventory.itemOnCursor = Items.Id.empty
                                         Inventory.itemCountOnCursor = 0
 
-                    
-            
             if Inventory.selectedSlot != None and (ForeGround.getMousePos()[0] > 432 or ForeGround.getMousePos()[1] > ySize) and 1 <= Inventory.grid[0][Inventory.selectedSlot] <= 50:
                 if Inventory.stackAmount[0][Inventory.selectedSlot] <= 0:
                     Inventory.grid[0][Inventory.selectedSlot] = Items.Id.empty
@@ -234,21 +320,20 @@ while True:
                 if Block.Grid.blockBreakingPos != Block.Grid.blockBreakingPosLast:
                     blockBreakNumber = 1
 
-                    Block.Grid.SetBlockBreakCoord((ForeGround.getMousePos()[0]+Character.characterDrawLocation[0], (ForeGround.getMousePos()[1]+Character.characterDrawLocation[1])-600))
+                Block.Grid.SetBlockBreakCoord((ForeGround.getMousePos()[0]+Character.characterDrawLocation[0], (ForeGround.getMousePos()[1]+Character.characterDrawLocation[1])-600))
 
-                    blockBreakSpeed = Block.Type.determineBreakingSpeed()
+                blockBreakSpeed = Block.Type.determineBreakingSpeed()
                 if Block.Grid.getBlockAtLocation2(Block.Grid.blockBreakingPos) == Block.Type.BlockType.air:
                         blockBreakNumber = 1
 
                 if iterNum%blockBreakSpeed == 0:
                     blockBreakNumber += 1
                 if blockBreakNumber%6 == 0:
-                    entites.append()
                     Inventory.addItem(Block.Grid.getBlockAtLocation2(Block.Grid.blockBreakingPos))
                     Block.Grid.breakBlock((ForeGround.getMousePos()[0],ForeGround.getMousePos()[1]),1)
                     blockBreakNumber = 1
         else:
-                blockBreakNumber = 1    
+                blockBreakNumber = 1
 
         if pg.mouse.get_pressed(3) == (False,True,False) and Inventory.selectedSlot != None and Block.Grid.getBlockAtLocation((ForeGround.getMousePos()[0],ForeGround.getMousePos()[1])) != Block.Type.BlockType.air:
             Inventory.grid[0][Inventory.selectedSlot] = Block.Grid.getBlockAtLocation((ForeGround.getMousePos()[0],ForeGround.getMousePos()[1]))
@@ -323,13 +408,12 @@ while True:
                 if Character.Pos.newCollisionCheck()[4] == 1 and Character.Pos.newCollisionCheck()[5] == 1:
                     yVelocity -= 0.5
         if keyboardInput[pg.K_z]:
-                Block.Grid.saveWorld()
+                Block.Grid.saveWorld(Block.openWorld)
                     
 
         if Character.Pos.newCollisionCheck()[6] == 1:
             if yVelocity < 0:
                 yVelocity = 0
-
         Character.Input.inputKey(keyboardInput,iterNum,entities)
 
         Character.Pos.update()

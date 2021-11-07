@@ -3,6 +3,7 @@ import math
 from pygame.locals import *
 pg = pygame
 import numpy as np
+import json
 
 class ForeGround():
   cursorIcon = pg.image.load("./Images/background images/cursor.png")
@@ -47,9 +48,13 @@ class BackGround():
 
     bgBlockOverlay = pg.image.load("./Images/background images/bgOverlay.png").convert_alpha()
 
+class Gui():
+    loadGameButton = pg.image.load("./Images/Gui/load game button.png").convert_alpha()
+    newGameButton = pg.image.load("./Images/Gui/new game button.png").convert_alpha()
 
 class Block():
     #start of subclasses
+    openWorld = None
     class Type():
         def determineBreakingSpeed():
             pickBreakSpeedMod = 1
@@ -114,7 +119,7 @@ class Block():
 
     #list variable for storing block data. structure is BlockMatrix[Horizontal Columns(uses y input)][Block in column(uses x input)][blockType]
     BlockMatrix = [[[]for i in range(worldLength)]for i in range(worldHeight)]
-    bgBlockMatrix = [[[]for i in range(worldLength +1)]for i in range(worldHeight)]
+    bgBlockMatrix = [[[]for i in range(worldLength)]for i in range(worldHeight)]
 
     #sets every block to air
     for y in range(worldHeight):
@@ -132,18 +137,41 @@ class Block():
         blockBreakingPosLast = [0,0]
 
         #inits the BlockGrid
-        def saveWorld():
-            try:
-	            worldFile = open("./saves/world.txt",'x')
-            except:
-	            worldFile = open("./saves/world.txt",'w')
-            for row in Block.BlockMatrix:
-                np.savetxt(worldFile,row)
+        def saveWorld(worldName):
+            jsonData = {
+                "playerData":{
+                "playerPos":[Character.characterLocation[0],Character.characterLocation[1]],
+                "playerInventoryGrid":inventory.Inventory.grid,
+                "playerInventoryStackGrid":inventory.Inventory.stackAmount,
+                }
+            }
+            
+            with open(f"./saves/{worldName}_data.json",'w') as jsonFile:
+                json.dump(jsonData,jsonFile)
+                jsonFile.close()
+
+            if Block.openWorld == None:
+                Block.openWorld = worldName
+            worldFile = open(f"./saves/{worldName}.txt",'w')
+            worldFileBg = open(f"./saves/{worldName}_bg.txt",'w')
+            for row in range(len(Block.BlockMatrix)):
+                np.savetxt(worldFile,Block.BlockMatrix[row])
+                np.savetxt(worldFileBg,Block.bgBlockMatrix[row])
             worldFile.close()
+
         def loadWorld(fileName):
-            worldData = np.loadtxt(f"./saves/{fileName}").reshape(worldHeight,worldLength)
+            with open(f"./saves/{fileName}_data.json", "r") as inputData:
+                data = json.load(inputData)
+            Character.characterLocation = data['playerData']['playerPos']
+            inventory.Inventory.grid = data['playerData']['playerInventoryGrid']
+            inventory.Inventory.stackAmount = data['playerData']['playerInventoryStackGrid']
+
+            Block.openWorld = fileName
+            worldData = np.loadtxt(f"./saves/{fileName}.txt").reshape(worldHeight,worldLength)
             Block.BlockMatrix = worldData.astype(int)
-            print("loaded world")
+            worldBgData = np.loadtxt(f"./saves/{fileName}_bg.txt").reshape(worldHeight,worldLength)
+            Block.bgBlockMatrix = worldBgData.astype(int)
+            print(f"loaded world: {fileName}")
         def SetBlockBreakCoord(position):
             x = math.floor((position[0])/blockSize)
             y = math.floor((position[1]-8)/blockSize)

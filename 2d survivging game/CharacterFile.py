@@ -21,7 +21,7 @@ class Character():
     characterDrawLocation = [400,400]
     characterBoundingBox = pg.Rect(383,505,36,72)
                     #top left               #bottom left           #top right             #bottom right          #left bottom half      #right bottom half     #head hitbox
-    boundingBoxes = [pg.Rect(383,519,18,16),pg.Rect(383,545,18,16),pg.Rect(401,518,18,16),pg.Rect(401,545,18,16),pg.Rect(385,561,16,16),pg.Rect(403,561,16,16),pg.Rect(392,503,18,8)]
+    boundingBoxes = [pg.Rect(383,519,18,16),pg.Rect(383,545,18,16),pg.Rect(401,518,18,16),pg.Rect(401,545,18,16),pg.Rect(387,561,14,16),pg.Rect(400,561,14,16),pg.Rect(392,503,18,8)]
     playerSpeed = 0.3
     characterImage = 1
 
@@ -168,6 +168,9 @@ class Character():
                     return False
         def newCollisionCheck():
             returnValue = [0,0,0,0,0,0,0]
+
+            pg.draw.rect(gameWindow.ForeGround.display,(0,255,0),Character.boundingBoxes[4])
+            pg.draw.rect(gameWindow.ForeGround.display,(255,0,0),Character.boundingBoxes[5])
 
             for y in range(math.floor(Character.characterLocation[1]-5),math.floor(Character.characterLocation[1]+3)):
                 for x in range(math.floor(Character.characterLocation[0]+9),math.floor(Character.characterLocation[0]+17)): 
