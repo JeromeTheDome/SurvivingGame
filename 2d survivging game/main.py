@@ -28,9 +28,10 @@ pygame.font.init()
 #inits
 
 #default values
+saveButton = pg.Rect((725,725),(55,55))
 textBoxText = ''
 activeTextBox = None
-inventoryBackGround = pg.image.load("./Images/hud/openInventoryBackground.png").convert()
+inventoryBackGround = pg.image.load("./Images/hud/openInventoryBackground.png").convert_alpha()
 entities = []
 
 selectedBox = None
@@ -136,7 +137,6 @@ def generateWorld():
             if not(0 <= noise.snoise2(x*0.07,y*0.07,repeaty=999999,repeatx=999999,octaves = 1,persistence=1) <= 0.6):
                 Block.Grid.placeBlock((x,y),Block.Type.BlockType.dirt,True)
             Block.Grid.placeBlockBg((x,y),Block.Type.BlockType.dirt,True)
-#Block.Grid.loadWorld("cummy world")
 
 Inventory.grid[0][0] = Items.Id.defaultPick
 Inventory.stackAmount[0][0] = 1
@@ -180,7 +180,8 @@ while True:
     #load game screen
     while scene == loadGameScene:
         ev = pg.event.get()
-        pg.draw.rect(ForeGround.display,(0,0,0),pg.Rect((0,0),(800,800)))
+        #clears screen with while background
+        pg.draw.rect(ForeGround.display,(255,255,255),pg.Rect((0,0),(800,800)))
         worlds = os.listdir("./saves")
         for i in range(len(worlds)):
             try:
@@ -190,16 +191,20 @@ while True:
                     worlds.pop(i)
             except:
                 pass
+
+        #creates back button
         backButton = pg.Rect((20,30),(50,50))
-        pg.draw.rect(ForeGround.display,(180,180,180),backButton)
-        backButtonText = myfont.render("Back", False, (0, 0, 0))
-        ForeGround.display.blit(backButtonText,(20,20))
+        ForeGround.display.blit(Gui.backButton,(20,20))
+        #places all world select buttons
         for i in range(len(worlds)):
+            #defines world button
             worldButton = pg.Rect((200,(395+len(worlds)*15)-i*30),(400,20))
-            pg.draw.rect(ForeGround.display,(180,180,180),worldButton)
+            ForeGround.display.blit(Gui.selectFileButton,(200,(395+len(worlds)*15)-i*30))
+            #defines world button text
             fileNameText = myfont.render(str(worlds[i]), False, (0, 0, 0))
             fileNameTextWidth = fileNameText.get_rect().width
-            ForeGround.display.blit(fileNameText,(400-(fileNameTextWidth/2),(395+len(worlds)*15)-i*30))
+            ForeGround.display.blit(fileNameText,(400-(fileNameTextWidth/2),(390+len(worlds)*15)-i*30))
+            #checks for mouse input
             for event in ev:
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if worldButton.collidepoint(ForeGround.getMousePos()[0],ForeGround.getMousePos()[1]) and pg.mouse.get_pressed(3) == (True,False,False):
@@ -213,12 +218,18 @@ while True:
         pg.display.flip()
     while scene == createWorld:
         ev = pg.event.get()
-        pg.draw.rect(ForeGround.display,(0,0,0),pg.Rect((0,0),(800,800)))
+        pg.draw.rect(ForeGround.display,(255,255,255),pg.Rect((0,0),(800,800)))
+        #creates back button
+        backButton = pg.Rect((20,30),(50,50))
+        ForeGround.display.blit(Gui.backButton,(20,20))
+        #defines all text boxes
         textBoxes = [pg.Rect((350, 375), (100, 50))]
+        #creates make worl button
         createWorldButton = pg.Rect((350, 450), (100, 50))
         createWorldButtonText = myfont.render("create world", True, (255, 255, 255))
         pg.draw.rect(ForeGround.display,(180,180,180),createWorldButton)
         ForeGround.display.blit(createWorldButtonText,(350,450))
+        #checks through all text boxes to process logic for them
         for i in range(len(textBoxes)):
             boxColor = (180,180,180)
             for event in ev:
@@ -230,6 +241,7 @@ while True:
                 boxColor = (200,200,200)
             pg.draw.rect(ForeGround.display,boxColor,textBoxes[i])
 
+        #keys key input for text box
         for event in ev:
             if event.type == pygame.KEYDOWN:
 
@@ -239,11 +251,14 @@ while True:
                     textBoxText = ''
                 else:
                     textBoxText += event.unicode
+            #mouse input
             if event.type == pygame.MOUSEBUTTONDOWN:
                         if createWorldButton.collidepoint(ForeGround.getMousePos()[0],ForeGround.getMousePos()[1]) and pg.mouse.get_pressed(3) == (True,False,False):
                             generateWorld()
                             Block.openWorld = textBoxText
                             scene = mainGame
+                        if backButton.collidepoint(ForeGround.getMousePos()[0],ForeGround.getMousePos()[1]) and pg.mouse.get_pressed(3) == (True,False,False):
+                            scene = mainMenu
 
         textBoxTextSurface = myfont.render(textBoxText, True, (255, 255, 255))
         if activeTextBox != None:
@@ -280,12 +295,14 @@ while True:
                         Inventory.selectedSlot = i
             elif Inventory.open == True:
                 ySize = 240
+
+                if saveButton.collidepoint(ForeGround.getMousePos()[0],ForeGround.getMousePos()[1]):
+                    for event in ev:
+                        if event.type == pygame.MOUSEBUTTONDOWN:
+                                Block.Grid.saveWorld(Block.openWorld)
                 for y in range(5):
                     for x in range(9):
                         if math.floor(ForeGround.getMousePos()[0]/48) == x and math.floor(ForeGround.getMousePos()[1]/48) == y:
-
-                            for event in ev:
-                                if event.type == pygame.MOUSEBUTTONDOWN:
 
                                     if Inventory.itemOnCursor != Items.Id.empty and Inventory.grid[y][x] != Items.Id.empty:
                                         temporaryItem = Inventory.itemOnCursor
@@ -378,17 +395,6 @@ while True:
         if Character.characterLocation[1]%1 != 0 and yVelocity == 0:
             Character.characterLocation[1] = math.floor(Character.characterLocation[1])
 
-        #pushes player out of blocks if they are clipping
-        while True:
-            if Character.Pos.newCollisionCheck()[4] and Character.Pos.newCollisionCheck()[0]:
-                Character.characterLocation[0] += 0.01
-            else:
-                if Character.Pos.newCollisionCheck()[5] and Character.Pos.newCollisionCheck()[2]:
-                    Character.characterLocation[0] -= 0.01
-                else:
-                    break
-                #im sorry frank staffen im just feeling quite lazy today i know its not correct
-
         yVelocity += 0.2
 
         if yVelocity > 1:
@@ -404,9 +410,16 @@ while True:
             if event.type == pg.KEYDOWN:
                 if keyboardInput[pg.K_TAB]:
                     Inventory.open = not Inventory.open
-            if keyboardInput[pg.K_SPACE]:
-                if Character.Pos.newCollisionCheck()[4] == 1 and Character.Pos.newCollisionCheck()[5] == 1:
-                    yVelocity -= 0.5
+                if keyboardInput[pg.K_SPACE]:
+                    if Character.Pos.newCollisionCheck()[4] == 1 and Character.Pos.newCollisionCheck()[5] == 1:
+                        yVelocity -= 0.5
+                if keyboardInput[K_e]:
+                    if Inventory.craftingTableOpen == True:
+                        Inventory.craftingTableOpen = False
+                    elif Block.Grid.getBlockAtLocation((ForeGround.getMousePos()[0],ForeGround.getMousePos()[1])) == Block.Type.BlockType.craftingTable:
+                        if Inventory.craftingTableOpen == False:
+                            Inventory.craftingTableOpen = True
+                            Inventory.activeCraftingTableCoords = [Character.characterLocation[0],Character.characterLocation[1]]
         if keyboardInput[pg.K_z]:
                 Block.Grid.saveWorld(Block.openWorld)
                     
@@ -425,6 +438,12 @@ while True:
         """
         hud/inventory code
         """
+        #cragting table stuff
+        if Inventory.craftingTableOpen == True:
+            ForeGround.display.blit(Inventory.Render.craftingTableInterface,(500,500))
+        if (Character.characterLocation[0]-Inventory.activeCraftingTableCoords[0]) > 5 or (Character.characterLocation[0]-Inventory.activeCraftingTableCoords[0]) <-5 or (Character.characterLocation[1]-Inventory.activeCraftingTableCoords[1]) > 5 or (Character.characterLocation[1]-Inventory.activeCraftingTableCoords[1]) <-5:
+            Inventory.craftingTableOpen = False
+
 
         if Inventory.selectedSlot != None and Inventory.stackAmount[0][Inventory.selectedSlot] <= 0:
             Inventory.grid[0][Inventory.selectedSlot] = Items.Id.empty
@@ -432,6 +451,7 @@ while True:
 
         #hud rendering code
         if Inventory.open == True:
+            ForeGround.display.blit(Gui.saveButton,(725,725))
             ForeGround.display.blit(inventoryBackGround,(0,0))
             for y in range(1,5):
                 for x in range(9):

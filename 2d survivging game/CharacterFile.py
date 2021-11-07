@@ -118,6 +118,8 @@ class Character():
                 inventory.Inventory.stackAmount[0][5] = 100
                 inventory.Inventory.grid[0][6] = itemIds.Items.Id.leaves
                 inventory.Inventory.stackAmount[0][6] = 100
+                inventory.Inventory.grid[0][7] = itemIds.Items.Id.craftingTable
+                inventory.Inventory.stackAmount[0][7] = 100
             
            
 

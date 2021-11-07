@@ -9,6 +9,8 @@ class Inventory():
     grid = [[[]for i in range(9)]for i in range(6)]
     stackAmount = [[[]for i in range(9)]for i in range(6)]
     open = False
+    craftingTableOpen = False
+    activeCraftingTableCoords = [0,0]
 
     itemOnCursor = Items.Id.empty
     itemCountOnCursor = 0
@@ -52,6 +54,7 @@ class Inventory():
     class Render():
         inventoryBox = pg.image.load("./Images/hud/inventoryBox.png").convert_alpha()
         inventoryBoxSelected = pg.image.load("./Images/hud/inventoryBoxSelected.png").convert_alpha()
+        craftingTableInterface = pg.image.load("./Images/hud/craftingUi.png").convert_alpha()
 
         def renderBox(coordinates,itemId,active = False):
             if active == False:

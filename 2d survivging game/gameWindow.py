@@ -51,6 +51,9 @@ class BackGround():
 class Gui():
     loadGameButton = pg.image.load("./Images/Gui/load game button.png").convert_alpha()
     newGameButton = pg.image.load("./Images/Gui/new game button.png").convert_alpha()
+    backButton = pg.image.load("./Images/Gui/back button.png").convert_alpha()
+    selectFileButton = pg.image.load("./Images/Gui/load screen button.png").convert_alpha()
+    saveButton = pg.image.load("./Images/Gui/save button.png").convert_alpha()
 
 class Block():
     #start of subclasses
@@ -100,7 +103,8 @@ class Block():
             wood = 5
             log = 6
             leaves = 7
-            lastentry = 8
+            craftingTable = 8
+            lastentry = 9
         
         List = [pg.image] * BlockType.lastentry
         List[BlockType.air] = pg.image.load("./Images/block icons/air.png").convert_alpha()
@@ -111,6 +115,7 @@ class Block():
         List[BlockType.wood] = pg.image.load("./Images/block icons/wood.png").convert()
         List[BlockType.log] = pg.image.load("./Images/block icons/log.png").convert()
         List[BlockType.leaves] = pg.image.load("./Images/block icons/leaves.png").convert_alpha()
+        List[BlockType.craftingTable] = pg.image.load("./Images/block icons/craftingTable.png").convert_alpha()
 
     global worldLength
     global numBlocks
@@ -140,7 +145,7 @@ class Block():
         def saveWorld(worldName):
             jsonData = {
                 "playerData":{
-                "playerPos":[Character.characterLocation[0],Character.characterLocation[1]],
+                "playerPos":[round(Character.characterLocation[0],2),round(Character.characterLocation[1],2)],
                 "playerInventoryGrid":inventory.Inventory.grid,
                 "playerInventoryStackGrid":inventory.Inventory.stackAmount,
                 }
