@@ -2,6 +2,7 @@ import pygame
 import math
 from pygame.locals import *
 pg = pygame
+import numpy as np
 
 class ForeGround():
   cursorIcon = pg.image.load("./Images/background images/cursor.png")
@@ -112,7 +113,7 @@ class Block():
     #all of these are defined at the top as many subclasses of block rely on them
 
     #list variable for storing block data. structure is BlockMatrix[Horizontal Columns(uses y input)][Block in column(uses x input)][blockType]
-    BlockMatrix = [[[]for i in range(worldLength +1)]for i in range(worldHeight)]
+    BlockMatrix = [[[]for i in range(worldLength)]for i in range(worldHeight)]
     bgBlockMatrix = [[[]for i in range(worldLength +1)]for i in range(worldHeight)]
 
     #sets every block to air
@@ -131,7 +132,18 @@ class Block():
         blockBreakingPosLast = [0,0]
 
         #inits the BlockGrid
-
+        def saveWorld():
+            try:
+	            worldFile = open("./saves/world.txt",'x')
+            except:
+	            worldFile = open("./saves/world.txt",'w')
+            for row in Block.BlockMatrix:
+                np.savetxt(worldFile,row)
+            worldFile.close()
+        def loadWorld(fileName):
+            worldData = np.loadtxt(f"./saves/{fileName}").reshape(worldHeight,worldLength)
+            Block.BlockMatrix = worldData.astype(int)
+            print("loaded world")
         def SetBlockBreakCoord(position):
             x = math.floor((position[0])/blockSize)
             y = math.floor((position[1]-8)/blockSize)
@@ -216,4 +228,5 @@ class Block():
                         if Block.bgBlockMatrix[y][x] != Block.Type.BlockType.air and Block.BlockMatrix[y][x] == Block.Type.BlockType.air:
                             Block.Renderer.drawBlock(ForeGround.display,Block.Type.List[Block.bgBlockMatrix[y][x]],(x,y),True)
                         Block.Renderer.drawBlock(ForeGround.display,Block.Type.List[Block.BlockMatrix[y][x]],(x,y))
+
                         
