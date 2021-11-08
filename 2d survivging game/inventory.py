@@ -8,6 +8,11 @@ class Inventory():
     selectedSlot = None
     grid = [[[]for i in range(9)]for i in range(6)]
     stackAmount = [[[]for i in range(9)]for i in range(6)]
+
+    craftingTableGrid = [[[]for i in range(3)]for i in range(3)]
+    craftingTableStackAmount = [[[]for i in range(3)]for i in range(3)]
+    craftingTableOutputBox = Items.Id.empty
+    craftingTableOutputAmount = 1
     open = False
     craftingTableOpen = False
     activeCraftingTableCoords = [0,0]
@@ -19,6 +24,11 @@ class Inventory():
         for x in range(9):
             grid[y][x] = Items.Id.empty
             stackAmount[y][x] = 0
+    
+    for y in range(3):
+        for x in range(3):
+            craftingTableGrid[y][x] = Items.Id.empty
+            craftingTableStackAmount[y][x] = 0
 
     def addItem(type,amount=1):
         #adds to pre existing stack
@@ -55,6 +65,7 @@ class Inventory():
         inventoryBox = pg.image.load("./Images/hud/inventoryBox.png").convert_alpha()
         inventoryBoxSelected = pg.image.load("./Images/hud/inventoryBoxSelected.png").convert_alpha()
         craftingTableInterface = pg.image.load("./Images/hud/craftingUi.png").convert_alpha()
+        arrowDown = pg.image.load("./Images/hud/arrowDown.png").convert_alpha()
 
         def renderBox(coordinates,itemId,active = False):
             if active == False:

@@ -54,6 +54,7 @@ class Gui():
     backButton = pg.image.load("./Images/Gui/back button.png").convert_alpha()
     selectFileButton = pg.image.load("./Images/Gui/load screen button.png").convert_alpha()
     saveButton = pg.image.load("./Images/Gui/save button.png").convert_alpha()
+    exitToMenuButton = pg.image.load("./Images/Gui/exit to menu button.png").convert_alpha()
 
 class Block():
     #start of subclasses
@@ -129,7 +130,7 @@ class Block():
     #sets every block to air
     for y in range(worldHeight):
         for x in range(worldLength):
-            BlockMatrix[y][x] = Type.BlockType.air
+            BlockMatrix[y][x] = Type.BlockType.dirt
             bgBlockMatrix[y][x] = Type.BlockType.air
 
 
