@@ -14,12 +14,14 @@ class Items():
             log = 6
             leaves = 7
             craftingTable = 8
+            chest = 9
             #51 to 100 reserved for tools
             defaultPick = 51
             defaultAxe = 52
             defaultShovel = 53
             #101 and up is for other items
-            lastentry = 101
+            toolHandle = 101
+            lastentry = 102
 
     #assigns icons to each item id
     #blocks
@@ -33,7 +35,10 @@ class Items():
     iconList[Id.log] = pg.image.load("./Images/Item Icons/logIcon.png").convert_alpha()
     iconList[Id.leaves] = pg.image.load("./Images/Item Icons/leavesIcon.png").convert_alpha()
     iconList[Id.craftingTable] = pg.image.load("./Images/Item Icons/craftingTableIcon.png").convert_alpha()
+    iconList[Id.chest] = pg.image.load("./Images/Item Icons/chestIcon.png").convert_alpha()
     #tools/weapons
     iconList[Id.defaultPick] = pg.image.load("./Images/Item Icons/pickaxe.png").convert_alpha()
     iconList[Id.defaultAxe] = pg.image.load("./Images/Item Icons/axe.png").convert_alpha()
     iconList[Id.defaultShovel] = pg.image.load("./Images/Item Icons/shovel.png").convert_alpha()
+    #other items
+    iconList[Id.toolHandle] = pg.image.load("./Images/Item Icons/toolHandle.png").convert_alpha()

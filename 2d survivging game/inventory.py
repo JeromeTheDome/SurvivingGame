@@ -5,6 +5,7 @@ import CharacterFile
 from entity import Entity
 
 class Inventory():
+    containers = []
     selectedSlot = None
     grid = [[[]for i in range(9)]for i in range(6)]
     stackAmount = [[[]for i in range(9)]for i in range(6)]
@@ -16,6 +17,8 @@ class Inventory():
     open = False
     craftingTableOpen = False
     activeCraftingTableCoords = [0,0]
+
+    chestOpen = False
 
     itemOnCursor = Items.Id.empty
     itemCountOnCursor = 0
@@ -47,7 +50,7 @@ class Inventory():
                     return False
 
         return True
-
+    
     def dropItem(slot,entities):
       if Inventory.stackAmount[0][slot] > 1:
         entities += [Entity((CharacterFile.Character.characterLocation[0]+14,CharacterFile.Character.characterLocation[1]-4),(16,16),0,Inventory.grid[0][slot])]

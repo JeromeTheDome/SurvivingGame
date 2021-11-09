@@ -14,6 +14,7 @@ from entity import Entity
 import noise
 import random
 import os
+from container import Container
 
 """
 to do list:
@@ -29,12 +30,14 @@ pygame.font.init()
 #inits
 
 #default values
+windowWlast, windowHlast = [None,None]
 exitButton = pg.Rect((725,665),(55,55))
 saveButton = pg.Rect((725,725),(55,55))
 textBoxText = ''
 activeTextBox = None
 inventoryBackGround = pg.image.load("./Images/hud/openInventoryBackground.png").convert_alpha()
 entities = []
+
 
 selectedBox = None
 
@@ -76,16 +79,25 @@ characterY = 10
 
 #defines background image
 bgImage = BackGround.bgImage("./Images/background images/cloud.png").convert()
+bgImage2 = BackGround.bgImage("./Images/background images/cloud.png").convert()
+bgImage2 = pygame.transform.flip(bgImage2,False,True)
 
 def generateWorld():
+    for y in range(worldHeight):
+        for x in range(worldLength):
+            Block.BlockMatrix[y][x] = Block.Type.BlockType.air
+            Block.bgBlockMatrix[y][x] = Block.Type.BlockType.air
     #sets up bottom squares
     for x in range(worldLength):
         for y in range(10,500):
-            if not(0.135 <= noise.snoise2(x*0.07,y*0.07,repeaty=999999,repeatx=999999,octaves = 1,persistence=1,lacunarity=10) <= 0.7):
-                Block.Grid.placeBlock((x,500 + y),Block.Type.BlockType.stone,True)
-                Block.Grid.placeBlockBg((x,500 + y),Block.Type.BlockType.stone,True)
-            else:
-                Block.Grid.placeBlockBg((x,500 + y),Block.Type.BlockType.stone,True)
+            try:
+                if not(0.135 <= noise.snoise2(x*0.07,y*0.07,repeaty=999999,repeatx=999999,octaves = 1,persistence=1,lacunarity=10) <= 0.7):
+                    Block.Grid.placeBlock((x,500 + y),Block.Type.BlockType.stone,True)
+                    Block.Grid.placeBlockBg((x,500 + y),Block.Type.BlockType.stone,True)
+                else:
+                    Block.Grid.placeBlockBg((x,500 + y),Block.Type.BlockType.stone,True)
+            except:
+                pass
 
     seed = random.randint(0,500)
 
@@ -123,22 +135,21 @@ def generateWorld():
             Block.Grid.placeBlockBg((x-1,y-7),Block.Type.BlockType.leaves,True)
             Block.Grid.placeBlockBg((x,y-7),Block.Type.BlockType.leaves,True)
             Block.Grid.placeBlockBg((x+1,y-7),Block.Type.BlockType.leaves,True)
-
-            for i in range(random.randint(5,7)):
-                pass
-                #Block.Grid.placeBlock((x,y-i),Block.Type.BlockType.log,True)
-
-        Block.Grid.placeBlock((x,y),Block.Type.BlockType.grass,True)
-        Block.Grid.placeBlock((x,y+1),Block.Type.BlockType.dirt,True)
-        Block.Grid.placeBlock((x,y+2),Block.Type.BlockType.dirt,True)
-        Block.Grid.placeBlock((x,y+3),Block.Type.BlockType.dirt,True)
-        Block.Grid.placeBlock((x,y+4),Block.Type.BlockType.dirt,True)
+        
+        try:
+            Block.Grid.placeBlock((x,y),Block.Type.BlockType.grass,True)
+            Block.Grid.placeBlock((x,y+1),Block.Type.BlockType.dirt,True)
+            Block.Grid.placeBlock((x,y+2),Block.Type.BlockType.dirt,True)
+            Block.Grid.placeBlock((x,y+3),Block.Type.BlockType.dirt,True)
+            Block.Grid.placeBlock((x,y+4),Block.Type.BlockType.dirt,True)
 
 
-        for y in range(y,510):
-            if not(0 <= noise.snoise2(x*0.07,y*0.07,repeaty=999999,repeatx=999999,octaves = 1,persistence=1) <= 0.6):
-                Block.Grid.placeBlock((x,y),Block.Type.BlockType.dirt,True)
-            Block.Grid.placeBlockBg((x,y),Block.Type.BlockType.dirt,True)
+            for y in range(y,510):
+                if not(0 <= noise.snoise2(x*0.07,y*0.07,repeaty=999999,repeatx=999999,octaves = 1,persistence=1) <= 0.6):
+                    Block.Grid.placeBlock((x,y),Block.Type.BlockType.dirt,True)
+                Block.Grid.placeBlockBg((x,y),Block.Type.BlockType.dirt,True)
+        except:
+            pass
 
 Inventory.grid[0][0] = Items.Id.defaultPick
 Inventory.stackAmount[0][0] = 1
@@ -166,10 +177,11 @@ while True:
     frame = 0
     #main menu scene
     while scene == mainMenu:
+        windowW, windowH = pygame.display.get_surface().get_size()
         ev = pg.event.get()
         pygame.mouse.set_cursor((8,8),(0,0),(0,0,0,0,0,0,0,0),(0,0,0,0,0,0,0,0))
         pg.draw.rect(ForeGround.display,(255,255,255),pg.Rect((0,0),(800,800)))
-        Block.Renderer.drawBlocksOnScreen()
+        Block.Renderer.drawBlocksOnScreen((windowW/32+1,windowH/32-18))
         loadGameButton = pg.Rect((50,350),(300,100))
         ForeGround.display.blit(Gui.loadGameButton,(50,350))
         if loadGameButton.collidepoint(ForeGround.getMousePos()[0],ForeGround.getMousePos()[1]) and pg.mouse.get_pressed(3) == (True,False,False):
@@ -184,11 +196,12 @@ while True:
     
     #load game screen
     while scene == loadGameScene:
+        windowW, windowH = pygame.display.get_surface().get_size()
         ev = pg.event.get()
         pygame.mouse.set_cursor((8,8),(0,0),(0,0,0,0,0,0,0,0),(0,0,0,0,0,0,0,0))
         #clears screen with while background
         pg.draw.rect(ForeGround.display,(255,255,255),pg.Rect((0,0),(800,800)))
-        Block.Renderer.drawBlocksOnScreen()
+        Block.Renderer.drawBlocksOnScreen((windowW/32+1,windowH/32-18))
         worlds = os.listdir("./saves")
         for i in range(len(worlds)):
             try:
@@ -223,21 +236,26 @@ while True:
             
         ForeGround.display.blit(ForeGround.cursorIcon,(ForeGround.getMousePos()[0]-12,ForeGround.getMousePos()[1]-9))
         pg.display.flip()
+    #create world scene
     while scene == createWorld:
+        windowW, windowH = pygame.display.get_surface().get_size()
         ev = pg.event.get()
         pygame.mouse.set_cursor((8,8),(0,0),(0,0,0,0,0,0,0,0),(0,0,0,0,0,0,0,0))
         pg.draw.rect(ForeGround.display,(255,255,255),pg.Rect((0,0),(800,800)))
-        Block.Renderer.drawBlocksOnScreen()
+        Block.Renderer.drawBlocksOnScreen((windowW/32+1,windowH/32-18))
         #creates back button
         backButton = pg.Rect((20,30),(50,50))
         ForeGround.display.blit(Gui.backButton,(20,20))
         #defines all text boxes
-        textBoxes = [pg.Rect((350, 375), (100, 50))]
+        textBoxes = [pg.Rect((350, 375), (100, 25))]
         #creates make worl button
         createWorldButton = pg.Rect((350, 450), (100, 50))
         createWorldButtonText = myfont.render("create world", True, (255, 255, 255))
         pg.draw.rect(ForeGround.display,(180,180,180),createWorldButton)
         ForeGround.display.blit(createWorldButtonText,(350,450))
+        #makes name world text
+        nameWorldText = myfont.render("World Name: ", True, (255, 255, 255))
+        ForeGround.display.blit(nameWorldText,(400-(nameWorldText.get_rect().width/2),355))
         #checks through all text boxes to process logic for them
         for i in range(len(textBoxes)):
             boxColor = (180,180,180)
@@ -248,7 +266,6 @@ while True:
 
             if activeTextBox == i:
                 boxColor = (200,200,200)
-            pg.draw.rect(ForeGround.display,boxColor,textBoxes[i])
 
         #keys key input for text box
         for event in ev:
@@ -270,8 +287,11 @@ while True:
                             scene = mainMenu
 
         textBoxTextSurface = myfont.render(textBoxText, True, (255, 255, 255))
+
         if activeTextBox != None:
-            ForeGround.display.blit(textBoxTextSurface,(textBoxes[activeTextBox]))
+            textBoxWidth = textBoxTextSurface.get_rect().width
+            ForeGround.display.blit(textBoxTextSurface,(400-(textBoxWidth/2),375))
+
         frame += 1
         ForeGround.display.blit(ForeGround.cursorIcon,(ForeGround.getMousePos()[0]-12,ForeGround.getMousePos()[1]-9))
         pg.display.flip()
@@ -279,23 +299,36 @@ while True:
     while scene == mainGame:
         #gets pygame events
         ev = pg.event.get()
+        windowW, windowH = pygame.display.get_surface().get_size()
         keyboardInput = pg.key.get_pressed()
         pygame.mouse.set_cursor((8,8),(0,0),(0,0,0,0,0,0,0,0),(0,0,0,0,0,0,0,0))
         clock.tick(60)
         #print(int(clock.get_fps()))
         #START
 
+        for event in ev:
+            if event.type == pg.VIDEORESIZE:
+                flags = DOUBLEBUF|RESIZABLE
+                ForeGround.display = pg.display.set_mode((math.floor(windowW/32)*32,math.floor(windowH/32)*32),flags)
+                
+                windowDeltaX = (windowW-windowWlast)/32
+                windowDeltaY = (windowH-windowHlast)/32
+
+                Character.characterLocation[0] -= windowDeltaX
+                Character.characterLocation[1] -= windowDeltaY
+
+
+
+
         #checks mouse input
         if pg.mouse.get_pressed(3) == (False,False,True):
-            try:
-                if Block.Grid.getBlockAtLocation((ForeGround.getMousePos()[0],ForeGround.getMousePos()[1])) == Block.Type.BlockType.air:
-                    Inventory.stackAmount[0][Inventory.selectedSlot] -= 1
+            if Block.Grid.getBlockAtLocation((ForeGround.getMousePos()[0],ForeGround.getMousePos()[1])) == Block.Type.BlockType.air:
+                Inventory.stackAmount[0][Inventory.selectedSlot] -= 1
 
-                    if Inventory.grid[0][Inventory.selectedSlot] != None:
-                        Block.Grid.placeBlock((ForeGround.getMousePos()[0],ForeGround.getMousePos()[1]),Inventory.grid[0][Inventory.selectedSlot])
-            except:
-                pass
-
+                if Inventory.grid[0][Inventory.selectedSlot] != None:
+                    if Inventory.grid[0][Inventory.selectedSlot] == Items.Id.chest:
+                        Inventory.containers += [Container((Block.Grid.translateToBlockCoords(ForeGround.getMousePos())[0],Block.Grid.translateToBlockCoords(ForeGround.getMousePos())[1]),1)]
+                    Block.Grid.placeBlock((ForeGround.getMousePos()[0],ForeGround.getMousePos()[1]),Inventory.grid[0][Inventory.selectedSlot])
         #right click
         if pg.mouse.get_pressed(3) == (True,False,False):
             if Inventory.open == False:
@@ -365,7 +398,7 @@ while True:
                     Inventory.grid[0][Inventory.selectedSlot] = Items.Id.empty
                     Inventory.stackAmount[0][Inventory.selectedSlot] = 0
 
-            if 224 < ForeGround.getMousePos()[0] < 576 and 352 < ForeGround.getMousePos()[1] < 736:
+            if True: #224 < ForeGround.getMousePos()[0] < 576 and 352 < ForeGround.getMousePos()[1] < 736:
                 if Block.Grid.blockBreakingPos != Block.Grid.blockBreakingPosLast:
                     blockBreakNumber = 1
 
@@ -393,10 +426,10 @@ while True:
                                     if math.floor(ForeGround.getMousePos()[0]/48) == x and math.floor(ForeGround.getMousePos()[1]/48) == y:
                                         if Inventory.itemOnCursor == Items.Id.empty:
                                             Inventory.stackAmount[y][x] -= 1
-                                            if Inventory.stackAmount[y][x] <= 0:
-                                                Inventory.grid[y][x] = Items.Id.empty
                                             Inventory.itemOnCursor = Inventory.grid[y][x]
                                             Inventory.itemCountOnCursor += 1
+                                            if Inventory.stackAmount[y][x] <= 0:
+                                                Inventory.grid[y][x] = Items.Id.empty
 
                                         elif Inventory.itemOnCursor == Inventory.grid[y][x]:
                                             Inventory.stackAmount[y][x] -= 1
@@ -409,7 +442,8 @@ while True:
         """
 
         #draws background image
-        BackGround.BlitToSurface(ForeGround.display,bgImage,scrollSpeed-4)
+        ForeGround.display.blit(bgImage,((scrollSpeed-4)*15,0))
+        ForeGround.display.blit(bgImage2,((scrollSpeed-4)*15,840))
 
         #logic for setting the x value of the background to make it scroll 
         if scrollDirection == 0 and iterNum%50 == 0:
@@ -433,7 +467,7 @@ while True:
         
         #block rendering logic is to be placed at the bottom
 
-        Block.Renderer.drawBlocksOnScreen()
+        Block.Renderer.drawBlocksOnScreen((windowW/32+1,windowH/32-18))
             
         Block.Renderer.drawBreakingOverlay(blockBreakNumber)
                     
@@ -468,6 +502,16 @@ while True:
                         if Inventory.craftingTableOpen == False:
                             Inventory.craftingTableOpen = True
                             Inventory.activeCraftingTableCoords = [Character.characterLocation[0],Character.characterLocation[1]]
+                    if Block.Grid.getBlockAtLocation((ForeGround.getMousePos()[0],ForeGround.getMousePos()[1])) == Block.Type.BlockType.chest:
+                        if Inventory.chestOpen == True:
+                                Inventory.chestOpen = False
+                        else:
+                            for i in Inventory.containers:
+                                if i.position[0] == Block.Grid.translateToBlockCoords(ForeGround.getMousePos())[0] and i.position[1] == Block.Grid.translateToBlockCoords(ForeGround.getMousePos())[1]:
+                                    activeContainer = i
+                                    Inventory.chestOpen = True
+                                    break
+                        
         if keyboardInput[pg.K_z]:
                 Block.Grid.saveWorld(Block.openWorld)
                     
@@ -477,6 +521,7 @@ while True:
                 yVelocity = 0
         Character.Input.inputKey(keyboardInput,iterNum,entities)
 
+        Character.Pos.updateDrawCoords((windowW,windowH))
         Character.Pos.update()
         #draw character at the end AFTER(DO NOT FORGOR💀) setting game logic for position
         Character.Render.drawStillX(ForeGround.display,Character.characterImage)
@@ -493,9 +538,10 @@ while True:
                 for x in range(3):
                     craftingBoxRect = pg.Rect((x*48+500,y*48+500),(48,48))
                     Inventory.Render.renderBox(((x*48+500),(y*48+500)),Inventory.craftingTableGrid[y][x])
+                    ForeGround.display.blit(myfont.render(str(Inventory.craftingTableStackAmount[y][x]), False, (150, 150, 150)),((x*48+500)+30,(y*48+500)+24))
                     for event in ev:
                         if event.type == pg.MOUSEBUTTONDOWN:
-                            if craftingBoxRect.collidepoint(ForeGround.getMousePos()[0],ForeGround.getMousePos()[1]):
+                            if pg.mouse.get_pressed(3) == (True,False,False) and craftingBoxRect.collidepoint(ForeGround.getMousePos()[0],ForeGround.getMousePos()[1]):
                                 temporaryItem = Inventory.itemOnCursor
                                 temporaryItemCount = Inventory.itemCountOnCursor
 
@@ -504,7 +550,26 @@ while True:
 
                                 Inventory.craftingTableStackAmount[y][x] = temporaryItemCount
                                 Inventory.craftingTableGrid[y][x] = temporaryItem
-            
+                            if pg.mouse.get_pressed(3) == (False,True,False) and craftingBoxRect.collidepoint(ForeGround.getMousePos()[0],ForeGround.getMousePos()[1]):
+                                if Inventory.itemOnCursor == Items.Id.empty:
+                                    Inventory.craftingTableStackAmount[y][x] -= 1
+                                    Inventory.itemOnCursor = Inventory.craftingTableGrid[y][x]
+                                    Inventory.itemCountOnCursor += 1
+                                    if Inventory.craftingTableStackAmount[y][x] <= 0:
+                                        Inventory.craftingTableGrid[y][x] = Items.Id.empty
+
+                                elif Inventory.itemOnCursor == Inventory.craftingTableGrid[y][x]:
+                                    Inventory.craftingTableStackAmount[y][x] -= 1
+                                    if Inventory.craftingTableStackAmount[y][x] <= 0:
+                                        Inventory.craftingTableGrid[y][x] = Items.Id.empty
+                                    Inventory.itemCountOnCursor += 1 
+                                elif Inventory.itemOnCursor != Items.Id.empty and Inventory.craftingTableGrid[y][x] == Items.Id.empty:
+                                    Inventory.craftingTableGrid[y][x] = Inventory.itemOnCursor
+                                    Inventory.craftingTableStackAmount[y][x] += 1
+                                    Inventory.itemCountOnCursor -= 1
+                                    if Inventory.itemCountOnCursor <= 0:
+                                        Inventory.itemOnCursor = Items.Id.empty
+
             #checks crafting table container against a bunch of recipies
             Inventory.craftingTableOutputBox = 0
             Inventory.craftingTableOutputAmount = 0
@@ -519,9 +584,10 @@ while True:
             craftingBoxRect = pg.Rect((548,695),(48,48))
             ForeGround.display.blit(Inventory.Render.arrowDown,(554,647))
             Inventory.Render.renderBox((548,695),Inventory.craftingTableOutputBox)
+            ForeGround.display.blit(myfont.render(str(Inventory.craftingTableOutputAmount), False, (150, 150, 150)),(584,719))
             for event in ev:
                 if event.type == pg.MOUSEBUTTONDOWN:
-                    if craftingBoxRect.collidepoint(ForeGround.getMousePos()[0],ForeGround.getMousePos()[1]):
+                    if pg.mouse.get_pressed(3) == (True,False,False) and craftingBoxRect.collidepoint(ForeGround.getMousePos()[0],ForeGround.getMousePos()[1]):
                         if Inventory.itemOnCursor == Items.Id.empty:
                             Inventory.itemCountOnCursor = Inventory.craftingTableOutputAmount
                             Inventory.itemOnCursor = Inventory.craftingTableOutputBox
@@ -541,6 +607,53 @@ while True:
                                     Inventory.craftingTableStackAmount[y][x] -= 1
                                     if Inventory.craftingTableStackAmount[y][x] <= 0:
                                         Inventory.craftingTableGrid[y][x] = Items.Id.empty
+        if Inventory.chestOpen == True:
+            for y in range(len(activeContainer.grid)):
+                for x in range(len(activeContainer.grid[0])):
+                    chestBoxRect = pg.Rect(((x*48),(y*48+288)),(48,48))
+                    Inventory.Render.renderBox(((x*48),(y*48+288)),activeContainer.grid[y][x])
+                    ForeGround.display.blit(myfont.render(str(activeContainer.stackGrid[y][x]), False, (150, 150, 150)),((x*48)+30,(y*48+288)+24))
+                    for event in ev:
+                        if event.type == pg.MOUSEBUTTONDOWN:
+                            if pg.mouse.get_pressed(3) == (True,False,False) and chestBoxRect.collidepoint(ForeGround.getMousePos()[0],ForeGround.getMousePos()[1]):
+                                if activeContainer.grid[y][x] != Inventory.itemOnCursor:
+                                    temporaryItem = Inventory.itemOnCursor
+                                    temporaryItemCount = Inventory.itemCountOnCursor
+
+                                    Inventory.itemCountOnCursor = activeContainer.stackGrid[y][x]
+                                    Inventory.itemOnCursor = activeContainer.grid[y][x]
+
+                                    activeContainer.stackGrid[y][x] = temporaryItemCount
+                                    activeContainer.grid[y][x] = temporaryItem
+                                elif Inventory.itemOnCursor == activeContainer.grid[y][x]:
+                                        for i in range(Inventory.itemCountOnCursor):
+                                            if activeContainer.stackGrid[y][x] < 100:
+                                                activeContainer.stackGrid[y][x] += 1
+                                                Inventory.itemCountOnCursor -= 1
+                                            else:
+                                                break
+                                        if Inventory.itemCountOnCursor <= 0:
+                                            Inventory.itemOnCursor = Items.Id.empty
+
+                            if pg.mouse.get_pressed(3) == (False,True,False) and chestBoxRect.collidepoint(ForeGround.getMousePos()[0],ForeGround.getMousePos()[1]):
+                                if Inventory.itemOnCursor == Items.Id.empty:
+                                    activeContainer.stackGrid[y][x] -= 1
+                                    Inventory.itemOnCursor = activeContainer.grid[y][x]
+                                    Inventory.itemCountOnCursor += 1
+                                    if activeContainer.stackGrid[y][x] <= 0:
+                                        activeContainer.grid[y][x] = Items.Id.empty
+
+                                elif Inventory.itemOnCursor == activeContainer.grid[y][x]:
+                                    activeContainer.stackGrid[y][x] -= 1
+                                    if activeContainer.stackGrid[y][x] <= 0:
+                                        activeContainer.grid[y][x] = Items.Id.empty
+                                    Inventory.itemCountOnCursor += 1 
+                                elif Inventory.itemOnCursor != Items.Id.empty and activeContainer.grid[y][x] == Items.Id.empty:
+                                    activeContainer.grid[y][x] = Inventory.itemOnCursor
+                                    activeContainer.stackGrid[y][x] += 1
+                                    Inventory.itemCountOnCursor -= 1
+                                    if Inventory.itemCountOnCursor <= 0:
+                                        Inventory.itemOnCursor = Items.Id.empty
                         
 
         if (Character.characterLocation[0]-Inventory.activeCraftingTableCoords[0]) > 5 or (Character.characterLocation[0]-Inventory.activeCraftingTableCoords[0]) <-5 or (Character.characterLocation[1]-Inventory.activeCraftingTableCoords[1]) > 5 or (Character.characterLocation[1]-Inventory.activeCraftingTableCoords[1]) <-5:
@@ -600,6 +713,7 @@ while True:
                         Inventory.addItem(Items.Id.log)
                         Inventory.addItem(Items.Id.leaves)
                         Inventory.addItem(Items.Id.craftingTable)
+                        Inventory.addItem(Items.Id.chest)
 
 
 
@@ -616,5 +730,6 @@ while True:
 
         #END
         #end of main loop. all code goes in between
+        windowWlast, windowHlast = pygame.display.get_surface().get_size()
         pg.display.flip()
 

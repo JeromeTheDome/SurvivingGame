@@ -17,6 +17,7 @@ numBlocks = int(800/blockSize)
 class Character():
     global worldLength
     #things defined at top are used in many functions and subclasses
+    characterScreenCoords = [383,505]
     characterLocation = [math.floor(worldLength/2),500]
     characterDrawLocation = [400,400]
     characterBoundingBox = pg.Rect(383,505,36,72)
@@ -121,9 +122,24 @@ class Character():
     class Pos():
 
         #moves the character left or right
-        def update(moveAmount = 1):
+        def update():
             Character.characterDrawLocation[0] = Character.characterLocation[0]*blockSize
             Character.characterDrawLocation[1] = Character.characterLocation[1]*blockSize
+
+        def updateDrawCoords(screenSize):
+
+            #[383,505]
+
+            Character.characterScreenCoords[0] = screenSize[0]/2-18
+            Character.characterScreenCoords[1] = screenSize[1]-288
+
+            Character.boundingBoxes = [pg.Rect(Character.characterScreenCoords[0],Character.characterScreenCoords[1]+14,18,16), #top left
+                             pg.Rect(Character.characterScreenCoords[0],Character.characterScreenCoords[1]+40,18,16), #bottom left
+                             pg.Rect(Character.characterScreenCoords[0]+18,Character.characterScreenCoords[1]+13,18,16),#top right
+                             pg.Rect(Character.characterScreenCoords[0]+18,Character.characterScreenCoords[1]+40,18,16),#bottom right
+                             pg.Rect(Character.characterScreenCoords[0]+3,Character.characterScreenCoords[1]+56,14,16), #left bottom
+                             pg.Rect(Character.characterScreenCoords[0]+17,Character.characterScreenCoords[1]+56,14,16), #right bottom
+                             pg.Rect(Character.characterScreenCoords[0]+8,Character.characterScreenCoords[1],18,8)] #head 
 
         #checks for collisions in a specified position relative to the player and returns true or false
         
@@ -153,18 +169,20 @@ class Character():
         def newCollisionCheck():
             returnValue = [0,0,0,0,0,0,0]
 
-            pg.draw.rect(gameWindow.ForeGround.display,(0,255,0),Character.boundingBoxes[4])
-            pg.draw.rect(gameWindow.ForeGround.display,(255,0,0),Character.boundingBoxes[5])
+            yOff = math.floor(Character.characterScreenCoords[1]/32-16)
+            xOff = math.floor(Character.characterScreenCoords[0]/32-11)
 
-            for y in range(math.floor(Character.characterLocation[1]-5),math.floor(Character.characterLocation[1]+3)):
-                for x in range(math.floor(Character.characterLocation[0]+9),math.floor(Character.characterLocation[0]+17)): 
+            for y in range(math.floor(Character.characterLocation[1]-5+yOff),math.floor(Character.characterLocation[1]+3+yOff)):
+                for x in range(math.floor(Character.characterLocation[0]+9+xOff),math.floor(Character.characterLocation[0]+17+xOff)): 
                     if gameWindow.Block.BlockMatrix[y][x] != gameWindow.Block.Type.BlockType.air:
-                        rectX = x - Character.characterLocation[0]
-                        rectY = y - (Character.characterLocation[1]) + 19
+                        rectX = x - Character.characterLocation[0]# + math.floor(Character.characterScreenCoords[0]/32)
+                        rectY = y - (Character.characterLocation[1]) + 19# + math.floor(Character.characterScreenCoords[1]/32)
 
-                        rectX = rectX * blockSize
-                        rectY = rectY * blockSize
+                        rectX = rectX * blockSize# - 352
+                        rectY = rectY * blockSize# - 512
+
                         blockChecking = pg.Rect((rectX,rectY),(32,32))
+
                         if blockChecking.colliderect(Character.boundingBoxes[0]):
                             returnValue[0] = 1
                         if blockChecking.colliderect(Character.boundingBoxes[1]):
@@ -201,4 +219,4 @@ class Character():
             surface.blit(imageIn,(x,y))
 
         def drawStillX(surface,imageIn):
-            surface.blit(imageIn,(383,505))
+            surface.blit(imageIn,(Character.characterScreenCoords[0],Character.characterScreenCoords[1]-8))

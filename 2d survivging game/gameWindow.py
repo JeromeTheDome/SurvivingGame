@@ -4,6 +4,7 @@ from pygame.locals import *
 pg = pygame
 import numpy as np
 import json
+from container import Container
 
 class ForeGround():
   cursorIcon = pg.image.load("./Images/background images/cursor.png")
@@ -11,7 +12,7 @@ class ForeGround():
   #inits the pygame window
   def __init__(self):
     pg.init()
-    flags = DOUBLEBUF
+    flags = DOUBLEBUF|RESIZABLE
     ForeGround.display = pg.display.set_mode((800,800),flags)
   def getMousePos():
    mousePos = [pg.mouse.get_pos()[0], pg.mouse.get_pos()[1]]
@@ -105,7 +106,8 @@ class Block():
             log = 6
             leaves = 7
             craftingTable = 8
-            lastentry = 9
+            chest = 9
+            lastentry = 10
         
         List = [pg.image] * BlockType.lastentry
         List[BlockType.air] = pg.image.load("./Images/block icons/air.png").convert_alpha()
@@ -117,6 +119,7 @@ class Block():
         List[BlockType.log] = pg.image.load("./Images/block icons/log.png").convert()
         List[BlockType.leaves] = pg.image.load("./Images/block icons/leaves.png").convert_alpha()
         List[BlockType.craftingTable] = pg.image.load("./Images/block icons/craftingTable.png").convert_alpha()
+        List[BlockType.chest] = pg.image.load("./Images/block icons/chest.png").convert_alpha()
 
     global worldLength
     global numBlocks
@@ -143,12 +146,27 @@ class Block():
         blockBreakingPosLast = [0,0]
 
         #inits the BlockGrid
+        def translateToBlockCoords(position):
+            #translate grid based input into screen cords
+            x = math.floor((position[0]+Character.characterDrawLocation[0])/blockSize)
+            y = math.floor((position[1]+Character.characterDrawLocation[1]-600)/blockSize)
+            returnValue = [x,y]
+            return returnValue
+
         def saveWorld(worldName):
+            jsonContainers = []
+
+            for i in inventory.Inventory.containers:
+                jsonContainers += [[i.position,i.type,i.grid,i.stackGrid]]
+
             jsonData = {
                 "playerData":{
                 "playerPos":[round(Character.characterLocation[0],2),round(Character.characterLocation[1],2)],
                 "playerInventoryGrid":inventory.Inventory.grid,
                 "playerInventoryStackGrid":inventory.Inventory.stackAmount,
+                },
+                "containerData":{
+                    "containers":jsonContainers,
                 }
             }
             
@@ -171,7 +189,8 @@ class Block():
             Character.characterLocation = data['playerData']['playerPos']
             inventory.Inventory.grid = data['playerData']['playerInventoryGrid']
             inventory.Inventory.stackAmount = data['playerData']['playerInventoryStackGrid']
-
+            for i in data['containerData']['containers']:
+                inventory.Inventory.containers += [Container(i[0],i[1],i[2],i[3])]
             Block.openWorld = fileName
             worldData = np.loadtxt(f"./saves/{fileName}.txt").reshape(worldHeight,worldLength)
             Block.BlockMatrix = worldData.astype(int)
@@ -256,9 +275,9 @@ class Block():
         def drawBreakingOverlay(blockBreakNumber):
             if blockBreakNumber > 1 and Block.Grid.getBlockAtLocation2(Block.Grid.blockBreakingPos) != Block.Type.BlockType.air:
                    Block.Renderer.drawBlock(ForeGround.display,pg.image.load("./Images/block icons/breakingOverlays/stage"+str(blockBreakNumber)+".png").convert_alpha(),(Block.Grid.blockBreakingPos[0],Block.Grid.blockBreakingPos[1]))
-        def drawBlocksOnScreen():
-            for y in range(math.floor(Character.characterLocation[1]-20),math.floor(Character.characterLocation[1]+7)):
-                for x in range(math.floor(Character.characterLocation[0]),math.floor(Character.characterLocation[0]+26)): 
+        def drawBlocksOnScreen(drawSize):
+            for y in range(math.floor(Character.characterLocation[1]-20),math.floor(Character.characterLocation[1]+drawSize[1])):
+                for x in range(math.floor(Character.characterLocation[0]),math.floor(Character.characterLocation[0]+drawSize[0])): 
                         if Block.bgBlockMatrix[y][x] != Block.Type.BlockType.air and Block.BlockMatrix[y][x] == Block.Type.BlockType.air:
                             Block.Renderer.drawBlock(ForeGround.display,Block.Type.List[Block.bgBlockMatrix[y][x]],(x,y),True)
                         Block.Renderer.drawBlock(ForeGround.display,Block.Type.List[Block.BlockMatrix[y][x]],(x,y))
