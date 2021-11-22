@@ -9,17 +9,18 @@ class Entity():
 	xVelocity = 0
 	amount = 1
 
-	def __init__(self,worldCoordinates,size,index,id):
+	def __init__(self,worldCoordinates,size,index,id,type=1,stackSize = 1): #defaut type is one for dropped item
 		self.drawCoordinates = [worldCoordinates[0]/32,worldCoordinates[1]/32]
 		self.coordinates = [worldCoordinates[0],worldCoordinates[1]]
 		self.size = size
 		self.boundingBox = pygame.Rect(self.drawCoordinates,self.size)
 		self.index = index
 		self.id = id
-		self.texture = itemIds.Items.iconList[self.id]
+		if type == 1:
+			self.texture = itemIds.Items.iconList[self.id]
+			self.stackSize = stackSize
 	
 	def update(self):
-		
 		self.drawCoordinates[0] = self.coordinates[0]*32 - CharacterFile.Character.characterLocation[0]*32
 		self.drawCoordinates[1] = self.coordinates[1]*32 - CharacterFile.Character.characterLocation[1]*32+608
 		self.boundingBox = pygame.Rect(self.drawCoordinates,self.size)

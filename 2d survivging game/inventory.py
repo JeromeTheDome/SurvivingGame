@@ -51,6 +51,16 @@ class Inventory():
 
         return True
     
+    def clearInventory(drop,entities):
+        if drop == True:
+            for y in range(6):
+                for x in range(9):
+                    entities += [Entity((CharacterFile.Character.characterLocation[0]+14,CharacterFile.Character.characterLocation[1]-4),(16,16),0,Inventory.grid[y][x],1,Inventory.stackAmount[y][x])]
+        for y in range(6):
+            for x in range(9):
+                Inventory.grid[y][x] = Items.Id.empty
+                Inventory.stackAmount[y][x] = 0
+
     def dropItem(slot,entities):
       if Inventory.stackAmount[0][slot] > 1:
         entities += [Entity((CharacterFile.Character.characterLocation[0]+14,CharacterFile.Character.characterLocation[1]-4),(16,16),0,Inventory.grid[0][slot])]

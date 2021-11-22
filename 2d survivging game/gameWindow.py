@@ -5,6 +5,8 @@ pg = pygame
 import numpy as np
 import json
 from container import Container
+import random
+import noise
 
 class ForeGround():
   cursorIcon = pg.image.load("./Images/background images/cursor.png")
@@ -57,9 +59,81 @@ class Gui():
     saveButton = pg.image.load("./Images/Gui/save button.png").convert_alpha()
     exitToMenuButton = pg.image.load("./Images/Gui/exit to menu button.png").convert_alpha()
 
+class World():
+    openWorld = None
+    spawnCoords = [0,0]
+    def generateWorld():
+        for y in range(worldHeight):
+            for x in range(worldLength):
+                Block.BlockMatrix[y][x] = Block.Type.BlockType.air
+                Block.bgBlockMatrix[y][x] = Block.Type.BlockType.air
+        #sets up bottom squares
+        for x in range(worldLength):
+            for y in range(10,500):
+                try:
+                    if not(0.45-y/1000 <= noise.snoise2(x*0.07,y*0.07,repeaty=999999,repeatx=999999,octaves = 1,persistence=1,lacunarity=10) <= 1-y/1000):
+                        Block.Grid.placeBlock((x,500 + y),Block.Type.BlockType.stone,True)
+                        Block.Grid.placeBlockBg((x,500 + y),Block.Type.BlockType.stone,True)
+                    else:
+                        Block.Grid.placeBlockBg((x,500 + y),Block.Type.BlockType.stone,True)
+                except:
+                    pass
+
+        seed = random.randint(0,500)
+
+
+        for x in range(worldLength):
+            frequency = 0.2
+
+            treeTrue = random.randint(0,10)
+
+            y =  int(noise.pnoise1((x/5+seed)*0.3,repeat=999999999)*5)+495
+
+            if x == 500:
+                Character.characterLocation[1] = y-2
+
+
+            if treeTrue == 5:
+                Block.Grid.placeBlockBg((x,y-1),Block.Type.BlockType.log,True)
+                Block.Grid.placeBlockBg((x,y-2),Block.Type.BlockType.log,True)
+                Block.Grid.placeBlockBg((x,y-3),Block.Type.BlockType.log,True)
+                Block.Grid.placeBlockBg((x,y-4),Block.Type.BlockType.log,True)
+
+                #first row of leaves
+                Block.Grid.placeBlockBg((x-1,y-5),Block.Type.BlockType.leaves,True)
+                Block.Grid.placeBlockBg((x-2,y-5),Block.Type.BlockType.leaves,True)
+                Block.Grid.placeBlockBg((x,y-5),Block.Type.BlockType.leaves,True)
+                Block.Grid.placeBlockBg((x+1,y-5),Block.Type.BlockType.leaves,True)
+                Block.Grid.placeBlockBg((x+2,y-5),Block.Type.BlockType.leaves,True)
+                #second row
+                Block.Grid.placeBlockBg((x-1,y-6),Block.Type.BlockType.leaves,True)
+                Block.Grid.placeBlockBg((x-2,y-6),Block.Type.BlockType.leaves,True)
+                Block.Grid.placeBlockBg((x,y-6),Block.Type.BlockType.leaves,True)
+                Block.Grid.placeBlockBg((x+1,y-6),Block.Type.BlockType.leaves,True)
+                Block.Grid.placeBlockBg((x+2,y-6),Block.Type.BlockType.leaves,True)
+                #third row
+                Block.Grid.placeBlockBg((x-1,y-7),Block.Type.BlockType.leaves,True)
+                Block.Grid.placeBlockBg((x,y-7),Block.Type.BlockType.leaves,True)
+                Block.Grid.placeBlockBg((x+1,y-7),Block.Type.BlockType.leaves,True)
+            
+            try:
+                Block.Grid.placeBlock((x,y),Block.Type.BlockType.grass,True)
+                Block.Grid.placeBlock((x,y+1),Block.Type.BlockType.dirt,True)
+                Block.Grid.placeBlock((x,y+2),Block.Type.BlockType.dirt,True)
+                Block.Grid.placeBlock((x,y+3),Block.Type.BlockType.dirt,True)
+                Block.Grid.placeBlock((x,y+4),Block.Type.BlockType.dirt,True)
+
+
+                for y in range(y,510):
+                    if not(0 <= noise.snoise2(x*0.07,y*0.07,repeaty=999999,repeatx=999999,octaves = 1,persistence=1) <= 0.6):
+                        Block.Grid.placeBlock((x,y),Block.Type.BlockType.dirt,True)
+                    Block.Grid.placeBlockBg((x,y),Block.Type.BlockType.dirt,True)
+            except:
+                pass
+        World.spawnCoords = [500,500]
+
 class Block():
     #start of subclasses
-    openWorld = None
     class Type():
         def determineBreakingSpeed():
             pickBreakSpeedMod = 1
@@ -167,6 +241,9 @@ class Block():
                 },
                 "containerData":{
                     "containers":jsonContainers,
+                },
+                "worldData":{
+                "spawnCoords":World.spawnCoords,
                 }
             }
             
@@ -174,8 +251,8 @@ class Block():
                 json.dump(jsonData,jsonFile)
                 jsonFile.close()
 
-            if Block.openWorld == None:
-                Block.openWorld = worldName
+            if World.openWorld == None:
+                World.openWorld = worldName
             worldFile = open(f"./saves/{worldName}.txt",'w')
             worldFileBg = open(f"./saves/{worldName}_bg.txt",'w')
             for row in range(len(Block.BlockMatrix)):
@@ -189,9 +266,10 @@ class Block():
             Character.characterLocation = data['playerData']['playerPos']
             inventory.Inventory.grid = data['playerData']['playerInventoryGrid']
             inventory.Inventory.stackAmount = data['playerData']['playerInventoryStackGrid']
+            World.spawnCoords = data['worldData']['spawnCoords']
             for i in data['containerData']['containers']:
                 inventory.Inventory.containers += [Container(i[0],i[1],i[2],i[3])]
-            Block.openWorld = fileName
+            World.openWorld = fileName
             worldData = np.loadtxt(f"./saves/{fileName}.txt").reshape(worldHeight,worldLength)
             Block.BlockMatrix = worldData.astype(int)
             worldBgData = np.loadtxt(f"./saves/{fileName}_bg.txt").reshape(worldHeight,worldLength)
@@ -276,10 +354,12 @@ class Block():
             if blockBreakNumber > 1 and Block.Grid.getBlockAtLocation2(Block.Grid.blockBreakingPos) != Block.Type.BlockType.air:
                    Block.Renderer.drawBlock(ForeGround.display,pg.image.load("./Images/block icons/breakingOverlays/stage"+str(blockBreakNumber)+".png").convert_alpha(),(Block.Grid.blockBreakingPos[0],Block.Grid.blockBreakingPos[1]))
         def drawBlocksOnScreen(drawSize):
-            for y in range(math.floor(Character.characterLocation[1]-20),math.floor(Character.characterLocation[1]+drawSize[1])):
-                for x in range(math.floor(Character.characterLocation[0]),math.floor(Character.characterLocation[0]+drawSize[0])): 
-                        if Block.bgBlockMatrix[y][x] != Block.Type.BlockType.air and Block.BlockMatrix[y][x] == Block.Type.BlockType.air:
-                            Block.Renderer.drawBlock(ForeGround.display,Block.Type.List[Block.bgBlockMatrix[y][x]],(x,y),True)
-                        Block.Renderer.drawBlock(ForeGround.display,Block.Type.List[Block.BlockMatrix[y][x]],(x,y))
-
+            try:
+                for y in range(math.floor(Character.characterLocation[1]-20),math.floor(Character.characterLocation[1]+drawSize[1])):
+                    for x in range(math.floor(Character.characterLocation[0]),math.floor(Character.characterLocation[0]+drawSize[0])): 
+                            if Block.bgBlockMatrix[y][x] != Block.Type.BlockType.air and Block.BlockMatrix[y][x] == Block.Type.BlockType.air:
+                                Block.Renderer.drawBlock(ForeGround.display,Block.Type.List[Block.bgBlockMatrix[y][x]],(x,y),True)
+                            Block.Renderer.drawBlock(ForeGround.display,Block.Type.List[Block.BlockMatrix[y][x]],(x,y))
+            except:
+                pass
                         

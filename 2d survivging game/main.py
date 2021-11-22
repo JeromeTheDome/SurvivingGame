@@ -15,6 +15,7 @@ import noise
 import random
 import os
 from container import Container
+from gameWindow import World
 
 """
 to do list:
@@ -33,6 +34,7 @@ pygame.font.init()
 #inits
 
 #default values
+realYVel = 0
 windowWlast, windowHlast = [None,None]
 exitButton = pg.Rect((725,665),(55,55))
 saveButton = pg.Rect((725,725),(55,55))
@@ -85,75 +87,6 @@ bgImage = BackGround.bgImage("./Images/background images/cloud.png").convert()
 bgImage2 = BackGround.bgImage("./Images/background images/cloud.png").convert()
 bgImage2 = pygame.transform.flip(bgImage2,False,True)
 
-def generateWorld():
-    for y in range(worldHeight):
-        for x in range(worldLength):
-            Block.BlockMatrix[y][x] = Block.Type.BlockType.air
-            Block.bgBlockMatrix[y][x] = Block.Type.BlockType.air
-    #sets up bottom squares
-    for x in range(worldLength):
-        for y in range(10,500):
-            try:
-                if not(0.45-y/1000 <= noise.snoise2(x*0.07,y*0.07,repeaty=999999,repeatx=999999,octaves = 1,persistence=1,lacunarity=10) <= 1-y/1000):
-                    Block.Grid.placeBlock((x,500 + y),Block.Type.BlockType.stone,True)
-                    Block.Grid.placeBlockBg((x,500 + y),Block.Type.BlockType.stone,True)
-                else:
-                    Block.Grid.placeBlockBg((x,500 + y),Block.Type.BlockType.stone,True)
-            except:
-                pass
-
-    seed = random.randint(0,500)
-
-
-    for x in range(worldLength):
-        frequency = 0.2
-
-        treeTrue = random.randint(0,10)
-
-        y =  int(noise.pnoise1((x/5+seed)*0.3,repeat=999999999)*5)+495
-
-        if x == 500:
-            Character.characterLocation[1] = y-2
-
-
-        if treeTrue == 5:
-            Block.Grid.placeBlockBg((x,y-1),Block.Type.BlockType.log,True)
-            Block.Grid.placeBlockBg((x,y-2),Block.Type.BlockType.log,True)
-            Block.Grid.placeBlockBg((x,y-3),Block.Type.BlockType.log,True)
-            Block.Grid.placeBlockBg((x,y-4),Block.Type.BlockType.log,True)
-
-            #first row of leaves
-            Block.Grid.placeBlockBg((x-1,y-5),Block.Type.BlockType.leaves,True)
-            Block.Grid.placeBlockBg((x-2,y-5),Block.Type.BlockType.leaves,True)
-            Block.Grid.placeBlockBg((x,y-5),Block.Type.BlockType.leaves,True)
-            Block.Grid.placeBlockBg((x+1,y-5),Block.Type.BlockType.leaves,True)
-            Block.Grid.placeBlockBg((x+2,y-5),Block.Type.BlockType.leaves,True)
-            #second row
-            Block.Grid.placeBlockBg((x-1,y-6),Block.Type.BlockType.leaves,True)
-            Block.Grid.placeBlockBg((x-2,y-6),Block.Type.BlockType.leaves,True)
-            Block.Grid.placeBlockBg((x,y-6),Block.Type.BlockType.leaves,True)
-            Block.Grid.placeBlockBg((x+1,y-6),Block.Type.BlockType.leaves,True)
-            Block.Grid.placeBlockBg((x+2,y-6),Block.Type.BlockType.leaves,True)
-            #third row
-            Block.Grid.placeBlockBg((x-1,y-7),Block.Type.BlockType.leaves,True)
-            Block.Grid.placeBlockBg((x,y-7),Block.Type.BlockType.leaves,True)
-            Block.Grid.placeBlockBg((x+1,y-7),Block.Type.BlockType.leaves,True)
-        
-        try:
-            Block.Grid.placeBlock((x,y),Block.Type.BlockType.grass,True)
-            Block.Grid.placeBlock((x,y+1),Block.Type.BlockType.dirt,True)
-            Block.Grid.placeBlock((x,y+2),Block.Type.BlockType.dirt,True)
-            Block.Grid.placeBlock((x,y+3),Block.Type.BlockType.dirt,True)
-            Block.Grid.placeBlock((x,y+4),Block.Type.BlockType.dirt,True)
-
-
-            for y in range(y,510):
-                if not(0 <= noise.snoise2(x*0.07,y*0.07,repeaty=999999,repeatx=999999,octaves = 1,persistence=1) <= 0.6):
-                    Block.Grid.placeBlock((x,y),Block.Type.BlockType.dirt,True)
-                Block.Grid.placeBlockBg((x,y),Block.Type.BlockType.dirt,True)
-        except:
-            pass
-
 Inventory.grid[0][0] = Items.Id.defaultPick
 Inventory.stackAmount[0][0] = 1
 Inventory.grid[0][1] = Items.Id.defaultAxe
@@ -161,7 +94,7 @@ Inventory.stackAmount[0][1] = 1
 Inventory.grid[0][2] = Items.Id.defaultShovel
 Inventory.stackAmount[0][2] = 1
 
-def deleteEnt(index,entites):
+def deleteEnt(index,entities):
 	if len(entities) > index:
 		if len(entities) > 0:
 			entities[index].deleteEntity(index)
@@ -291,8 +224,8 @@ while True:
             #mouse input
             if event.type == pygame.MOUSEBUTTONDOWN:
                         if createWorldButton.collidepoint(ForeGround.getMousePos()[0],ForeGround.getMousePos()[1]) and pg.mouse.get_pressed(3) == (True,False,False):
-                            generateWorld()
-                            Block.openWorld = textBoxText
+                            World.generateWorld()
+                            World.openWorld = textBoxText
                             scene = mainGame
                         if backButton.collidepoint(ForeGround.getMousePos()[0],ForeGround.getMousePos()[1]) and pg.mouse.get_pressed(3) == (True,False,False):
                             scene = mainMenu
@@ -360,7 +293,7 @@ while True:
                 if saveButton.collidepoint(ForeGround.getMousePos()[0],ForeGround.getMousePos()[1]):
                     for event in ev:
                         if event.type == pygame.MOUSEBUTTONDOWN:
-                                Block.Grid.saveWorld(Block.openWorld)
+                                Block.Grid.saveWorld(World.openWorld)
                 #checks for presses on the exit button
                 if exitButton.collidepoint(ForeGround.getMousePos()[0],ForeGround.getMousePos()[1]):
                     for event in ev:
@@ -496,6 +429,7 @@ while True:
         """
         player logic
         """
+        Character.healthUpdate(entities)
 
         #physics stuff
         
@@ -505,14 +439,18 @@ while True:
 
         #adds velocity to the player, effectively gravity
         yVelocity += 0.2
+        realYVel += 0.2
 
         #terminal velocity
         if yVelocity > 1:
             yVelocity = 1
 
         #zeroes out velocity if the player is on the ground
-        if Character.Pos.newCollisionCheck()[4] == 1:
+        if Character.Pos.newCollisionCheck()[4] == 1 or Character.characterLocation[1] > 950:
             yVelocity = 0
+            if realYVel > 2:
+                Character.health-=realYVel*6
+            realYVel = 0
 
 
 
@@ -718,7 +656,12 @@ while True:
             else:
                 Inventory.Render.renderBox(((i*48),1),Inventory.grid[0][i])
                 ForeGround.display.blit(myfont.render(str(Inventory.stackAmount[0][i]), False, (150, 150, 150)),(i*48+30,25))
+        #draw health bar
+        healthBgRect = pg.Rect(630,20,150,20)
+        healthRect = pg.Rect(630,20,Character.health*1.5,20)
 
+        pg.draw.rect(ForeGround.display,(255,0,0),healthBgRect)
+        pg.draw.rect(ForeGround.display,(50,255,10),healthRect)
         
 
         """
@@ -732,9 +675,10 @@ while True:
                 entities[i].gravityUpdate()
 
                 if Character.characterBoundingBox.colliderect(entities[i].boundingBox):
-                    Inventory.addItem(entities[i].id)
+                    for g in range(entities[i].stackSize):
+                        Inventory.addItem(entities[i].id)
                     deleteEnt(i,entities)
-            except:
+            except Exception as e:
                 pass
 
         #gives player 100 of every block(debug)

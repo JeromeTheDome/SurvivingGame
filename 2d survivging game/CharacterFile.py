@@ -17,16 +17,22 @@ numBlocks = int(800/blockSize)
 class Character():
     global worldLength
     #things defined at top are used in many functions and subclasses
+    health = 100
     characterScreenCoords = [383,505]
     characterLocation = [math.floor(worldLength/2),500]
     characterDrawLocation = [400,400]
     characterBoundingBox = pg.Rect(383,505,36,72)
                     #top left               #bottom left           #top right             #bottom right          #bottom          #head hitbox
     boundingBoxes = [pg.Rect(383,519,18,16),pg.Rect(383,545,18,16),pg.Rect(401,518,18,16),pg.Rect(401,545,18,16),pg.Rect(387,561,28,16),pg.Rect(392,503,18,8)]
-    playerSpeed = 0.1
+    playerSpeed = 0.3
     characterImage = 1
 
     #character images
+    def healthUpdate(entities):
+        if Character.health <= 0:
+            Character.characterLocation = gameWindow.World.spawnCoords
+            Character.health = 100
+            inventory.Inventory.clearInventory(True,entities)
     class Input():
         movingIter = 1
         direction = "right"
@@ -62,8 +68,13 @@ class Character():
                         doMove1 = False
                 #updates player pos
                 if doMove1 == True:
-                    if Character.Pos.newCollisionCheck()[0] != 1:
-                        Character.characterLocation[0] -= Character.playerSpeed
+                    moveCount = 0
+                    while moveCount <= Character.playerSpeed:
+                        if Character.Pos.newCollisionCheck()[0] != 1:
+                            Character.characterLocation[0] -= 0.1
+                            moveCount += 0.1
+                        else:
+                            break
                     if Character.Pos.newCollisionCheck()[1] == 1 and iterNum%3 == 0 and Character.Pos.newCollisionCheck()[5] != 1:
                         Character.characterLocation[1] -= 1
                         Character.characterLocation[0] -= Character.playerSpeed
@@ -84,8 +95,13 @@ class Character():
                         doMove = False    
                 #updates player pos
                 if doMove == True:
-                    if Character.Pos.newCollisionCheck()[2] != 1:
-                        Character.characterLocation[0] += Character.playerSpeed
+                    moveCount = 0
+                    while moveCount <= Character.playerSpeed:
+                        if Character.Pos.newCollisionCheck()[2] != 1:
+                            Character.characterLocation[0] += 0.1
+                            moveCount += 0.1
+                        else:
+                            break
                     if Character.Pos.newCollisionCheck()[3] == 1 and iterNum%3 == 0 and Character.Pos.newCollisionCheck()[5] != 1:
                         Character.characterLocation[1] -= 1
                         Character.characterLocation[0] += Character.playerSpeed
@@ -98,6 +114,7 @@ class Character():
                         Character.Input.movingIter+= 1
             else:
                    moving = False
+                   moveCount = 0
                    if Character.Input.direction == "right":
                     Character.characterImage = Character.Image.characterStillRight
                    elif Character.Input.direction == "left":
