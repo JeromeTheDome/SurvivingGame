@@ -19,6 +19,9 @@ from container import Container
 """
 to do list:
 make sand edible
+code cleanup (high priority)
+overhaul world generation system
+add delta time to world events
 """
 """
 notes: 
@@ -91,7 +94,7 @@ def generateWorld():
     for x in range(worldLength):
         for y in range(10,500):
             try:
-                if not(0.135 <= noise.snoise2(x*0.07,y*0.07,repeaty=999999,repeatx=999999,octaves = 1,persistence=1,lacunarity=10) <= 0.7):
+                if not(0.45-y/1000 <= noise.snoise2(x*0.07,y*0.07,repeaty=999999,repeatx=999999,octaves = 1,persistence=1,lacunarity=10) <= 1-y/1000):
                     Block.Grid.placeBlock((x,500 + y),Block.Type.BlockType.stone,True)
                     Block.Grid.placeBlockBg((x,500 + y),Block.Type.BlockType.stone,True)
                 else:
@@ -107,7 +110,7 @@ def generateWorld():
 
         treeTrue = random.randint(0,10)
 
-        y =  int(noise.pnoise1((x+seed)*0.07,repeat=999999999)*5)+495
+        y =  int(noise.pnoise1((x/5+seed)*0.3,repeat=999999999)*5)+495
 
         if x == 500:
             Character.characterLocation[1] = y-2
@@ -177,16 +180,22 @@ while True:
     frame = 0
     #main menu scene
     while scene == mainMenu:
+        #gets window size and events
         windowW, windowH = pygame.display.get_surface().get_size()
         ev = pg.event.get()
+        #sets cursor off screen
         pygame.mouse.set_cursor((8,8),(0,0),(0,0,0,0,0,0,0,0),(0,0,0,0,0,0,0,0))
+        #clears screen
         pg.draw.rect(ForeGround.display,(255,255,255),pg.Rect((0,0),(800,800)))
+        #renders the block background
         Block.Renderer.drawBlocksOnScreen((windowW/32+1,windowH/32-18))
+        #defines the rectangle and checks for pressess on the load game button
         loadGameButton = pg.Rect((50,350),(300,100))
         ForeGround.display.blit(Gui.loadGameButton,(50,350))
         if loadGameButton.collidepoint(ForeGround.getMousePos()[0],ForeGround.getMousePos()[1]) and pg.mouse.get_pressed(3) == (True,False,False):
             scene = loadGameScene
 
+        #does the same for the new game button
         newGameButton = pg.Rect((400,350),(300,100))
         ForeGround.display.blit(Gui.newGameButton,(400,350))
         if newGameButton.collidepoint(ForeGround.getMousePos()[0],ForeGround.getMousePos()[1]) and pg.mouse.get_pressed(3) == (True,False,False):
@@ -236,6 +245,8 @@ while True:
             
         ForeGround.display.blit(ForeGround.cursorIcon,(ForeGround.getMousePos()[0]-12,ForeGround.getMousePos()[1]-9))
         pg.display.flip()
+
+
     #create world scene
     while scene == createWorld:
         windowW, windowH = pygame.display.get_surface().get_size()
@@ -295,17 +306,23 @@ while True:
         frame += 1
         ForeGround.display.blit(ForeGround.cursorIcon,(ForeGround.getMousePos()[0]-12,ForeGround.getMousePos()[1]-9))
         pg.display.flip()
+
     #main game loop
     while scene == mainGame:
-        #gets pygame events
+        #gets pygame events and window size
         ev = pg.event.get()
         windowW, windowH = pygame.display.get_surface().get_size()
+        #gets keyboard input
         keyboardInput = pg.key.get_pressed()
+        #sets the cursor off screen
         pygame.mouse.set_cursor((8,8),(0,0),(0,0,0,0,0,0,0,0),(0,0,0,0,0,0,0,0))
+        #caps the framreate at 60
         clock.tick(60)
         #print(int(clock.get_fps()))
         #START
 
+        
+        #rounds the window size to the nearest number divisible by 32 and moves the player to the proper position
         for event in ev:
             if event.type == pg.VIDEORESIZE:
                 flags = DOUBLEBUF|RESIZABLE
@@ -321,15 +338,16 @@ while True:
 
 
         #checks mouse input
+        #right click
         if pg.mouse.get_pressed(3) == (False,False,True):
-            if Block.Grid.getBlockAtLocation((ForeGround.getMousePos()[0],ForeGround.getMousePos()[1])) == Block.Type.BlockType.air:
+            if Block.Grid.getBlockAtLocation((ForeGround.getMousePos()[0],ForeGround.getMousePos()[1])) == Block.Type.BlockType.air and Inventory.selectedSlot != None:
                 Inventory.stackAmount[0][Inventory.selectedSlot] -= 1
 
                 if Inventory.grid[0][Inventory.selectedSlot] != None:
                     if Inventory.grid[0][Inventory.selectedSlot] == Items.Id.chest:
                         Inventory.containers += [Container((Block.Grid.translateToBlockCoords(ForeGround.getMousePos())[0],Block.Grid.translateToBlockCoords(ForeGround.getMousePos())[1]),1)]
                     Block.Grid.placeBlock((ForeGround.getMousePos()[0],ForeGround.getMousePos()[1]),Inventory.grid[0][Inventory.selectedSlot])
-        #right click
+        #left click
         if pg.mouse.get_pressed(3) == (True,False,False):
             if Inventory.open == False:
                 ySize = 48
@@ -338,14 +356,16 @@ while True:
                         Inventory.selectedSlot = i
             elif Inventory.open == True:
                 ySize = 240
-
+                #checks for presses on the save button and saves the world if true
                 if saveButton.collidepoint(ForeGround.getMousePos()[0],ForeGround.getMousePos()[1]):
                     for event in ev:
                         if event.type == pygame.MOUSEBUTTONDOWN:
                                 Block.Grid.saveWorld(Block.openWorld)
+                #checks for presses on the exit button
                 if exitButton.collidepoint(ForeGround.getMousePos()[0],ForeGround.getMousePos()[1]):
                     for event in ev:
                         if event.type == pygame.MOUSEBUTTONDOWN:
+                            #cleans up world
                             for y in range(worldHeight):
                                 for x in range(worldLength):
                                     Block.BlockMatrix[y][x] = Block.Type.BlockType.dirt
@@ -353,12 +373,14 @@ while True:
                             Inventory.open = False
                             Inventory.craftingTableOpen == False
                             scene = mainMenu
+                #handles interaction with the inventory
                 for y in range(5):
                     for x in range(9):
                         for event in ev:
                             if event.type == pygame.MOUSEBUTTONDOWN:
-                                if math.floor(ForeGround.getMousePos()[0]/48) == x and math.floor(ForeGround.getMousePos()[1]/48) == y:
-                                    
+                                #calculates which box the player clicked
+                                if math.floor(ForeGround.getMousePos()[0]/48) == x and math.floor(ForeGround.getMousePos()[1]/48) == y:   
+                                    #what to do when the cursor is the same as the item in the slot    
                                     if Inventory.itemOnCursor == Inventory.grid[y][x]:
                                         for i in range(Inventory.itemCountOnCursor):
                                             if Inventory.stackAmount[y][x] < 100:
@@ -368,7 +390,7 @@ while True:
                                                 break
                                         if Inventory.itemCountOnCursor <= 0:
                                             Inventory.itemOnCursor = Items.Id.empty
-
+                                    #what to do when both the cursor and slot have something
                                     elif Inventory.itemOnCursor != Items.Id.empty and Inventory.grid[y][x] != Items.Id.empty:
                                         temporaryItem = Inventory.itemOnCursor
                                         temporaryItemCount = Inventory.itemCountOnCursor
@@ -378,14 +400,14 @@ while True:
 
                                         Inventory.grid[y][x] = temporaryItem
                                         Inventory.stackAmount[y][x] = temporaryItemCount
-
+                                    #what to do when the cursor is empty
                                     elif Inventory.itemOnCursor == Items.Id.empty:
                                         Inventory.itemOnCursor = Inventory.grid[y][x]
                                         Inventory.itemCountOnCursor = Inventory.stackAmount[y][x]
 
                                         Inventory.grid[y][x] = Items.Id.empty
-                                        Inventory.stackAmount[y][x] = 0
-
+                                        Inventory.stackAmount[y][x] =0
+                                    #what to do when the cursor is not empty
                                     elif Inventory.itemOnCursor != Items.Id.empty:
                                         Inventory.grid[y][x] = Inventory.itemOnCursor
                                         Inventory.stackAmount[y][x] = Inventory.itemCountOnCursor
@@ -417,6 +439,8 @@ while True:
         else:
                 blockBreakNumber = 1
 
+
+        #middle click
         if pg.mouse.get_pressed(3) == (False,True,False):
             if Inventory.open == True:
                 for y in range(5):
@@ -462,10 +486,8 @@ while True:
         """
         block placement and properties logic
         """
-        #grid matrix logic at top
 
-        
-        #block rendering logic is to be placed at the bottom
+        #renders blocks and the breaking overlay
 
         Block.Renderer.drawBlocksOnScreen((windowW/32+1,windowH/32-18))
             
@@ -474,27 +496,37 @@ while True:
         """
         player logic
         """
+
+        #physics stuff
+        
+        #floors the players position to prevent clipping
         if Character.characterLocation[1]%1 != 0 and yVelocity == 0:
             Character.characterLocation[1] = math.floor(Character.characterLocation[1])
 
+        #adds velocity to the player, effectively gravity
         yVelocity += 0.2
 
+        #terminal velocity
         if yVelocity > 1:
             yVelocity = 1
 
-            #zeroes out velocity if the player is on the ground
-        if Character.Pos.newCollisionCheck()[4] == 1 or Character.Pos.newCollisionCheck()[5] == 1:
+        #zeroes out velocity if the player is on the ground
+        if Character.Pos.newCollisionCheck()[4] == 1:
             yVelocity = 0
 
-        #keyboard input
 
+
+        #keyboard input
         for event in ev:
             if event.type == pg.KEYDOWN:
+                #opens inventory
                 if keyboardInput[pg.K_TAB]:
                     Inventory.open = not Inventory.open
+                #jump
                 if keyboardInput[pg.K_SPACE]:
-                    if Character.Pos.newCollisionCheck()[4] == 1 and Character.Pos.newCollisionCheck()[5] == 1:
+                    if Character.Pos.newCollisionCheck()[4] == 1:
                         yVelocity -= 0.5
+                #block interaction
                 if keyboardInput[K_e]:
                     if Inventory.craftingTableOpen == True:
                         Inventory.craftingTableOpen = False
@@ -511,16 +543,16 @@ while True:
                                     activeContainer = i
                                     Inventory.chestOpen = True
                                     break
-                        
-        if keyboardInput[pg.K_z]:
-                Block.Grid.saveWorld(Block.openWorld)
                     
-
-        if Character.Pos.newCollisionCheck()[6] == 1:
+        #head hitbox velocity cancelation
+        if Character.Pos.newCollisionCheck()[5] == 1:
             if yVelocity < 0:
                 yVelocity = 0
+
+        #does input for player movement
         Character.Input.inputKey(keyboardInput,iterNum,entities)
 
+        #updates coords for player
         Character.Pos.updateDrawCoords((windowW,windowH))
         Character.Pos.update()
         #draw character at the end AFTER(DO NOT FORGOR💀) setting game logic for position
@@ -607,13 +639,18 @@ while True:
                                     Inventory.craftingTableStackAmount[y][x] -= 1
                                     if Inventory.craftingTableStackAmount[y][x] <= 0:
                                         Inventory.craftingTableGrid[y][x] = Items.Id.empty
+        #logic for if a chest is opened
         if Inventory.chestOpen == True:
+            if activeContainer.position[0]-Character.characterLocation[0] < 5 or activeContainer.position[0]-Character.characterLocation[0] > 20: #or activeContainer.position[1]-Character.characterLocation[1] < 10 or activeContainer.position[1]-Character.characterLocation[1] > 20:
+                Inventory.chestOpen = False
+            #checks for interaction with chest grid
             for y in range(len(activeContainer.grid)):
                 for x in range(len(activeContainer.grid[0])):
                     chestBoxRect = pg.Rect(((x*48),(y*48+288)),(48,48))
                     Inventory.Render.renderBox(((x*48),(y*48+288)),activeContainer.grid[y][x])
                     ForeGround.display.blit(myfont.render(str(activeContainer.stackGrid[y][x]), False, (150, 150, 150)),((x*48)+30,(y*48+288)+24))
                     for event in ev:
+                        #mouse input
                         if event.type == pg.MOUSEBUTTONDOWN:
                             if pg.mouse.get_pressed(3) == (True,False,False) and chestBoxRect.collidepoint(ForeGround.getMousePos()[0],ForeGround.getMousePos()[1]):
                                 if activeContainer.grid[y][x] != Inventory.itemOnCursor:
@@ -687,6 +724,7 @@ while True:
         """
         entity logic
         """
+        #iterates through all entites to check for player collision with them
         for i in range(len(entities)):
             try:
                 ForeGround.display.blit(Items.iconList[entities[i].id],(entities[i].drawCoordinates))
@@ -699,6 +737,7 @@ while True:
             except:
                 pass
 
+        #gives player 100 of every block(debug)
         for event in ev:
             if event.type == pg.KEYDOWN:
                 if keyboardInput[pg.K_q]:

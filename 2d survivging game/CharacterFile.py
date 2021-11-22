@@ -21,9 +21,9 @@ class Character():
     characterLocation = [math.floor(worldLength/2),500]
     characterDrawLocation = [400,400]
     characterBoundingBox = pg.Rect(383,505,36,72)
-                    #top left               #bottom left           #top right             #bottom right          #left bottom half      #right bottom half     #head hitbox
-    boundingBoxes = [pg.Rect(383,519,18,16),pg.Rect(383,545,18,16),pg.Rect(401,518,18,16),pg.Rect(401,545,18,16),pg.Rect(387,561,14,16),pg.Rect(400,561,14,16),pg.Rect(392,503,18,8)]
-    playerSpeed = 0.3
+                    #top left               #bottom left           #top right             #bottom right          #bottom          #head hitbox
+    boundingBoxes = [pg.Rect(383,519,18,16),pg.Rect(383,545,18,16),pg.Rect(401,518,18,16),pg.Rect(401,545,18,16),pg.Rect(387,561,28,16),pg.Rect(392,503,18,8)]
+    playerSpeed = 0.1
     characterImage = 1
 
     #character images
@@ -62,10 +62,10 @@ class Character():
                         doMove1 = False
                 #updates player pos
                 if doMove1 == True:
-                    if Character.Pos.newCollisionCheck()[1] == 1 and iterNum%3 == 0 and Character.Pos.CollisionCheck('above',False) != True:
+                    if Character.Pos.newCollisionCheck()[0] != 1:
+                        Character.characterLocation[0] -= Character.playerSpeed
+                    if Character.Pos.newCollisionCheck()[1] == 1 and iterNum%3 == 0 and Character.Pos.newCollisionCheck()[5] != 1:
                         Character.characterLocation[1] -= 1
-                        Character.characterLocation[0] -= 1
-                    elif Character.Pos.newCollisionCheck()[0] != 1:
                         Character.characterLocation[0] -= Character.playerSpeed
                 Character.Pos.update()
                 #decides what animation to use for the character
@@ -84,10 +84,10 @@ class Character():
                         doMove = False    
                 #updates player pos
                 if doMove == True:
-                    if Character.Pos.newCollisionCheck()[3] == 1 and iterNum%3 == 0 and Character.Pos.CollisionCheck('above',False) != True:
+                    if Character.Pos.newCollisionCheck()[2] != 1:
+                        Character.characterLocation[0] += Character.playerSpeed
+                    if Character.Pos.newCollisionCheck()[3] == 1 and iterNum%3 == 0 and Character.Pos.newCollisionCheck()[5] != 1:
                         Character.characterLocation[1] -= 1
-                        Character.characterLocation[0] += 1
-                    elif Character.Pos.newCollisionCheck()[2] != 1:
                         Character.characterLocation[0] += Character.playerSpeed
                 #decides what animation to use for the character
                 if moving == True and iterNum%Character.Input.animationSpeed == 0:
@@ -137,8 +137,7 @@ class Character():
                              pg.Rect(Character.characterScreenCoords[0],Character.characterScreenCoords[1]+40,18,16), #bottom left
                              pg.Rect(Character.characterScreenCoords[0]+18,Character.characterScreenCoords[1]+13,18,16),#top right
                              pg.Rect(Character.characterScreenCoords[0]+18,Character.characterScreenCoords[1]+40,18,16),#bottom right
-                             pg.Rect(Character.characterScreenCoords[0]+3,Character.characterScreenCoords[1]+56,14,16), #left bottom
-                             pg.Rect(Character.characterScreenCoords[0]+17,Character.characterScreenCoords[1]+56,14,16), #right bottom
+                             pg.Rect(Character.characterScreenCoords[0]+3,Character.characterScreenCoords[1]+56,28,16), #bottom
                              pg.Rect(Character.characterScreenCoords[0]+8,Character.characterScreenCoords[1],18,8)] #head 
 
         #checks for collisions in a specified position relative to the player and returns true or false
@@ -167,7 +166,7 @@ class Character():
                 else:
                     return False
         def newCollisionCheck():
-            returnValue = [0,0,0,0,0,0,0]
+            returnValue = [0,0,0,0,0,0]
 
             yOff = math.floor(Character.characterScreenCoords[1]/32-16)
             xOff = math.floor(Character.characterScreenCoords[0]/32-11)
@@ -177,6 +176,7 @@ class Character():
                     if gameWindow.Block.BlockMatrix[y][x] != gameWindow.Block.Type.BlockType.air:
                         rectX = x - Character.characterLocation[0]# + math.floor(Character.characterScreenCoords[0]/32)
                         rectY = y - (Character.characterLocation[1]) + 19# + math.floor(Character.characterScreenCoords[1]/32)
+                    
 
                         rectX = rectX * blockSize# - 352
                         rectY = rectY * blockSize# - 512
@@ -195,9 +195,7 @@ class Character():
                             returnValue[4] = 1
                         if blockChecking.colliderect(Character.boundingBoxes[5]):
                             returnValue[5] = 1
-                        if blockChecking.colliderect(Character.boundingBoxes[6]):
-                            returnValue[6] = 1
-                        if returnValue == [1,1,1,1,1,1,1]:
+                        if returnValue == [1,1,1,1,1,1]:
                             break
             return returnValue
                             
