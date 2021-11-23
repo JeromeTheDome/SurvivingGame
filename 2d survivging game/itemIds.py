@@ -15,6 +15,7 @@ class Items():
             leaves = 7
             craftingTable = 8
             chest = 9
+            glowBlock = 10
             #51 to 100 reserved for tools
             defaultPick = 51
             defaultAxe = 52
@@ -27,15 +28,16 @@ class Items():
     #blocks
     iconList = [pg.image] * Id.lastentry
     iconList[Id.empty] = pg.image.load("./Images/Item Icons/empty.png").convert_alpha()
-    iconList[Id.stone] = pg.image.load("./Images/Item Icons/stoneIcon.png").convert_alpha()
-    iconList[Id.dirt] = pg.image.load("./Images/Item Icons/dirtIcon.png").convert_alpha()
-    iconList[Id.grass] = pg.image.load("./Images/Item Icons/grassIcon.png").convert_alpha()
-    iconList[Id.sand] = pg.image.load("./Images/Item Icons/sandIcon.png").convert_alpha()
-    iconList[Id.wood] = pg.image.load("./Images/Item Icons/woodIcon.png").convert_alpha()
-    iconList[Id.log] = pg.image.load("./Images/Item Icons/logIcon.png").convert_alpha()
+    iconList[Id.stone] = pg.image.load("./Images/Item Icons/stoneIcon.png").convert()
+    iconList[Id.dirt] = pg.image.load("./Images/Item Icons/dirtIcon.png").convert()
+    iconList[Id.grass] = pg.image.load("./Images/Item Icons/grassIcon.png").convert()
+    iconList[Id.sand] = pg.image.load("./Images/Item Icons/sandIcon.png").convert()
+    iconList[Id.wood] = pg.image.load("./Images/Item Icons/woodIcon.png").convert()
+    iconList[Id.log] = pg.image.load("./Images/Item Icons/logIcon.png").convert()
     iconList[Id.leaves] = pg.image.load("./Images/Item Icons/leavesIcon.png").convert_alpha()
-    iconList[Id.craftingTable] = pg.image.load("./Images/Item Icons/craftingTableIcon.png").convert_alpha()
-    iconList[Id.chest] = pg.image.load("./Images/Item Icons/chestIcon.png").convert_alpha()
+    iconList[Id.craftingTable] = pg.image.load("./Images/Item Icons/craftingTableIcon.png").convert()
+    iconList[Id.chest] = pg.image.load("./Images/Item Icons/chestIcon.png").convert()
+    iconList[Id.glowBlock] = pg.image.load("./Images/Item Icons/glowBlockIcon.png").convert()
     #tools/weapons
     iconList[Id.defaultPick] = pg.image.load("./Images/Item Icons/pickaxe.png").convert_alpha()
     iconList[Id.defaultAxe] = pg.image.load("./Images/Item Icons/axe.png").convert_alpha()

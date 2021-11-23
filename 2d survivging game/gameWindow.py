@@ -181,7 +181,8 @@ class Block():
             leaves = 7
             craftingTable = 8
             chest = 9
-            lastentry = 10
+            glowBlock = 10
+            lastentry = 11
         
         List = [pg.image] * BlockType.lastentry
         List[BlockType.air] = pg.image.load("./Images/block icons/air.png").convert_alpha()
@@ -192,8 +193,9 @@ class Block():
         List[BlockType.wood] = pg.image.load("./Images/block icons/wood.png").convert()
         List[BlockType.log] = pg.image.load("./Images/block icons/log.png").convert()
         List[BlockType.leaves] = pg.image.load("./Images/block icons/leaves.png").convert_alpha()
-        List[BlockType.craftingTable] = pg.image.load("./Images/block icons/craftingTable.png").convert_alpha()
-        List[BlockType.chest] = pg.image.load("./Images/block icons/chest.png").convert_alpha()
+        List[BlockType.craftingTable] = pg.image.load("./Images/block icons/craftingTable.png").convert()
+        List[BlockType.chest] = pg.image.load("./Images/block icons/chest.png").convert()
+        List[BlockType.glowBlock] = pg.image.load("./Images/block icons/glowBlock.png").convert()
 
     global worldLength
     global numBlocks
@@ -332,7 +334,17 @@ class Block():
         def getBlockAtLocation2(location):
             return Block.BlockMatrix[location[1]][location[0]]
 
-    class Renderer():
+    class Renderer():     #glow block
+        emmisiveBlocks = [[10,15]]
+
+        lightingOverlayList = []
+        lightingOverlayList += [pg.image.load("./Images/block icons/lightingOverlays/0.png").convert_alpha()]
+        lightingGrid = [[5 for i in range(worldLength)]for i in range(worldHeight)]
+        minLightValue = 3
+        naturalLightLevel = 15
+        for i in range(0,15):
+            lightingOverlayList += [pg.image.load(f"./Images/block icons/lightingOverlays/{i}.png").convert_alpha()]
+
         global blockSize
         #takes coordinates from 0 to 20 on both axis
         def drawBlock(surface,blockType,position,bg = False):
@@ -349,17 +361,48 @@ class Block():
             if bg == True:
                 surface.blit(BackGround.bgBlockOverlay,(x,y))
 
+        def calcLighting(pos):
+            x = pos[0]
+            y = pos[1]
+            lightGrid = Block.Renderer.lightingGrid
+            returnValue = None
+
+           #maxSurrounding = max(lightGrid[y-1][x-1],lightGrid[y-1][x],lightGrid[y-1][x+1],
+                #lightGrid[y][x-1],lightGrid[y][x+1],
+                #lightGrid[y+1][x-1],lightGrid[y+1][x],lightGrid[y+1][x+1])
+            maxSurrounding = max(lightGrid[y-1][x],
+                   lightGrid[y][x-1],lightGrid[y][x+1],
+                   lightGrid[y+1][x])
+
+            for i in Block.Renderer.emmisiveBlocks:
+                if Block.BlockMatrix[y][x] == i[0] or Block.bgBlockMatrix[y][x] == i[0]:
+                    return i[1]
+            if Block.bgBlockMatrix[y][x] == 0 and Block.BlockMatrix[y][x] == 0:
+                return max(Block.Renderer.naturalLightLevel,maxSurrounding-2)
+            if maxSurrounding > Block.Renderer.minLightValue:
+                return maxSurrounding - 5
+            return Block.Renderer.minLightValue
+
+        def drawLightOverlay(surface,level,pos):
+            #translate grid based input into screen cords
+            x = pos[0] - Character.characterLocation[0]
+            y = pos[1] - (Character.characterLocation[1]) + 19
+
+            x = x * blockSize
+            y = y * blockSize
+
+            surface.blit(Block.Renderer.lightingOverlayList[level],(x,y))
 
         def drawBreakingOverlay(blockBreakNumber):
             if blockBreakNumber > 1 and Block.Grid.getBlockAtLocation2(Block.Grid.blockBreakingPos) != Block.Type.BlockType.air:
                    Block.Renderer.drawBlock(ForeGround.display,pg.image.load("./Images/block icons/breakingOverlays/stage"+str(blockBreakNumber)+".png").convert_alpha(),(Block.Grid.blockBreakingPos[0],Block.Grid.blockBreakingPos[1]))
         def drawBlocksOnScreen(drawSize):
-            try:
-                for y in range(math.floor(Character.characterLocation[1]-20),math.floor(Character.characterLocation[1]+drawSize[1])):
-                    for x in range(math.floor(Character.characterLocation[0]),math.floor(Character.characterLocation[0]+drawSize[0])): 
-                            if Block.bgBlockMatrix[y][x] != Block.Type.BlockType.air and Block.BlockMatrix[y][x] == Block.Type.BlockType.air:
-                                Block.Renderer.drawBlock(ForeGround.display,Block.Type.List[Block.bgBlockMatrix[y][x]],(x,y),True)
-                            Block.Renderer.drawBlock(ForeGround.display,Block.Type.List[Block.BlockMatrix[y][x]],(x,y))
-            except:
-                pass
+            for y in range(math.floor(Character.characterLocation[1]-20),math.floor(Character.characterLocation[1]+drawSize[1])):
+                for x in range(math.floor(Character.characterLocation[0]),math.floor(Character.characterLocation[0]+drawSize[0])): 
+                        if Block.bgBlockMatrix[y][x] != Block.Type.BlockType.air and Block.BlockMatrix[y][x] == Block.Type.BlockType.air:
+                            Block.Renderer.drawBlock(ForeGround.display,Block.Type.List[Block.bgBlockMatrix[y][x]],(x,y),True)
+                        Block.Renderer.drawBlock(ForeGround.display,Block.Type.List[Block.BlockMatrix[y][x]],(x,y))
+                        Block.Renderer.lightingGrid[y][x] = Block.Renderer.calcLighting((x,y))
+                        if Block.Renderer.lightingGrid[y][x] != 15:
+                            Block.Renderer.drawLightOverlay(ForeGround.display,Block.Renderer.lightingGrid[y][x],(x,y))
                         

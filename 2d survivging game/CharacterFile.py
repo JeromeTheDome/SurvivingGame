@@ -30,9 +30,9 @@ class Character():
     #character images
     def healthUpdate(entities):
         if Character.health <= 0:
-            Character.characterLocation = gameWindow.World.spawnCoords
-            Character.health = 100
             inventory.Inventory.clearInventory(True,entities)
+            Character.characterLocation = [gameWindow.World.spawnCoords[0],gameWindow.World.spawnCoords[1]]
+            Character.health = 100
     class Input():
         movingIter = 1
         direction = "right"

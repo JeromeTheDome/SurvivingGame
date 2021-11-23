@@ -34,6 +34,7 @@ pygame.font.init()
 #inits
 
 #default values
+placingMatrix = "foreground"
 realYVel = 0
 windowWlast, windowHlast = [None,None]
 exitButton = pg.Rect((725,665),(55,55))
@@ -83,8 +84,8 @@ characterX = 10
 characterY = 10
 
 #defines background image
-bgImage = BackGround.bgImage("./Images/background images/cloud.png").convert()
-bgImage2 = BackGround.bgImage("./Images/background images/cloud.png").convert()
+bgImage = BackGround.bgImage("./Images/background images/morning.png").convert()
+bgImage2 = BackGround.bgImage("./Images/background images/morning.png").convert()
 bgImage2 = pygame.transform.flip(bgImage2,False,True)
 
 Inventory.grid[0][0] = Items.Id.defaultPick
@@ -279,7 +280,10 @@ while True:
                 if Inventory.grid[0][Inventory.selectedSlot] != None:
                     if Inventory.grid[0][Inventory.selectedSlot] == Items.Id.chest:
                         Inventory.containers += [Container((Block.Grid.translateToBlockCoords(ForeGround.getMousePos())[0],Block.Grid.translateToBlockCoords(ForeGround.getMousePos())[1]),1)]
-                    Block.Grid.placeBlock((ForeGround.getMousePos()[0],ForeGround.getMousePos()[1]),Inventory.grid[0][Inventory.selectedSlot])
+                    if placingMatrix == "foreground":
+                        Block.Grid.placeBlock((ForeGround.getMousePos()[0],ForeGround.getMousePos()[1]),Inventory.grid[0][Inventory.selectedSlot])
+                    elif placingMatrix == "background":
+                        Block.Grid.placeBlockBg((ForeGround.getMousePos()[0],ForeGround.getMousePos()[1]),Inventory.grid[0][Inventory.selectedSlot])
         #left click
         if pg.mouse.get_pressed(3) == (True,False,False):
             if Inventory.open == False:
@@ -429,6 +433,8 @@ while True:
         """
         player logic
         """
+        if Character.health <= 0:
+            realYVel = 0
         Character.healthUpdate(entities)
 
         #physics stuff
@@ -448,7 +454,7 @@ while True:
         #zeroes out velocity if the player is on the ground
         if Character.Pos.newCollisionCheck()[4] == 1 or Character.characterLocation[1] > 950:
             yVelocity = 0
-            if realYVel > 2:
+            if realYVel > 2.5:
                 Character.health-=realYVel*6
             realYVel = 0
 
@@ -686,6 +692,11 @@ while True:
             if event.type == pg.KEYDOWN:
                 if keyboardInput[pg.K_q]:
                     Inventory.dropItem(Inventory.selectedSlot,entities)
+                if keyboardInput[pg.K_x]:
+                    if placingMatrix == "foreground":
+                        placingMatrix = "background"
+                    else:
+                        placingMatrix = "foreground"
                 if keyboardInput[pg.K_k]:
                     for i in range(100):
                         Inventory.addItem(Items.Id.stone)
@@ -697,6 +708,7 @@ while True:
                         Inventory.addItem(Items.Id.leaves)
                         Inventory.addItem(Items.Id.craftingTable)
                         Inventory.addItem(Items.Id.chest)
+                        Inventory.addItem(Items.Id.glowBlock)
 
 
 
