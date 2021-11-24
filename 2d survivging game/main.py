@@ -34,6 +34,7 @@ pygame.font.init()
 #inits
 
 #default values
+skycolorGradient = [(4,11,68),(4,11,68),(4,11,68),(4,11,68),(4,11,68),(0,53,119),(12,81,91),(17,148,178),(16,107,119),(16,107,119),(21,135,150),(26,169,118),(31,201,224),(31,201,224),(31,201,224),(31,201,224),(31,201,224),(31,201,224),(31,201,224),(24,158,175),(23,151,168),(17,110,122),(4,11,68),(4,11,68)]
 placingMatrix = "foreground"
 realYVel = 0
 windowWlast, windowHlast = [None,None]
@@ -254,6 +255,10 @@ while True:
         clock.tick(60)
         #print(int(clock.get_fps()))
         #START
+        if placingMatrix == "foreground":
+            layer = 1
+        elif placingMatrix == "background":
+            layer = 2
 
         
         #rounds the window size to the nearest number divisible by 32 and moves the player to the proper position
@@ -268,13 +273,14 @@ while True:
                 Character.characterLocation[0] -= windowDeltaX
                 Character.characterLocation[1] -= windowDeltaY
 
-
-
-
+        #world stuff
+        if World.time >= 43200:
+            World.time = 0
+        World.time += 1
         #checks mouse input
         #right click
         if pg.mouse.get_pressed(3) == (False,False,True):
-            if Block.Grid.getBlockAtLocation((ForeGround.getMousePos()[0],ForeGround.getMousePos()[1])) == Block.Type.BlockType.air and Inventory.selectedSlot != None:
+            if Block.Grid.getBlockAtLocation((ForeGround.getMousePos()[0],ForeGround.getMousePos()[1]),layer) == Block.Type.BlockType.air and Inventory.selectedSlot != None:
                 Inventory.stackAmount[0][Inventory.selectedSlot] -= 1
 
                 if Inventory.grid[0][Inventory.selectedSlot] != None:
@@ -357,22 +363,21 @@ while True:
                     Inventory.grid[0][Inventory.selectedSlot] = Items.Id.empty
                     Inventory.stackAmount[0][Inventory.selectedSlot] = 0
 
-            if True: #224 < ForeGround.getMousePos()[0] < 576 and 352 < ForeGround.getMousePos()[1] < 736:
-                if Block.Grid.blockBreakingPos != Block.Grid.blockBreakingPosLast:
+            if Block.Grid.blockBreakingPos != Block.Grid.blockBreakingPosLast:
+                blockBreakNumber = 1
+
+            Block.Grid.SetBlockBreakCoord((ForeGround.getMousePos()[0]+Character.characterDrawLocation[0], (ForeGround.getMousePos()[1]+Character.characterDrawLocation[1])-600))
+
+            blockBreakSpeed = Block.Type.determineBreakingSpeed()
+            if Block.Grid.getBlockAtLocation2(Block.Grid.blockBreakingPos,layer) == Block.Type.BlockType.air:
                     blockBreakNumber = 1
 
-                Block.Grid.SetBlockBreakCoord((ForeGround.getMousePos()[0]+Character.characterDrawLocation[0], (ForeGround.getMousePos()[1]+Character.characterDrawLocation[1])-600))
-
-                blockBreakSpeed = Block.Type.determineBreakingSpeed()
-                if Block.Grid.getBlockAtLocation2(Block.Grid.blockBreakingPos) == Block.Type.BlockType.air:
-                        blockBreakNumber = 1
-
-                if iterNum%blockBreakSpeed == 0:
-                    blockBreakNumber += 1
-                if blockBreakNumber%6 == 0:
-                    Inventory.addItem(Block.Grid.getBlockAtLocation2(Block.Grid.blockBreakingPos))
-                    Block.Grid.breakBlock((ForeGround.getMousePos()[0],ForeGround.getMousePos()[1]),1)
-                    blockBreakNumber = 1
+            if iterNum%blockBreakSpeed == 0:
+                blockBreakNumber += 1
+            if blockBreakNumber%6 == 0:
+                Inventory.addItem(Block.Grid.getBlockAtLocation2(Block.Grid.blockBreakingPos,layer))
+                Block.Grid.breakBlock((ForeGround.getMousePos()[0],ForeGround.getMousePos()[1]),layer)
+                blockBreakNumber = 1
         else:
                 blockBreakNumber = 1
 
@@ -403,21 +408,39 @@ while True:
         """
 
         #draws background image
-        ForeGround.display.blit(bgImage,((scrollSpeed-4)*15,0))
-        ForeGround.display.blit(bgImage2,((scrollSpeed-4)*15,840))
+        bgColor = skycolorGradient[int(World.time/1800)-1]
+        pg.draw.rect(ForeGround.display,bgColor,pg.Rect(0,0,windowW,windowH))
 
-        #logic for setting the x value of the background to make it scroll 
-        if scrollDirection == 0 and iterNum%50 == 0:
-            scrollSpeed += 1
-        elif scrollDirection == 1 and iterNum%50 == 0:
-            scrollSpeed -= 1
-
-        if scrollSpeed <= -4:
-            scrollDirection = 0
-        if scrollSpeed >= 4:
-            scrollDirection = 1
-
-
+        #sets light level according to time
+        time24hr = int(World.time/1800) + 1
+        if 1 <= time24hr <= 5:
+            Block.Renderer.naturalLightLevel = 3
+        elif time24hr == 6:
+            Block.Renderer.naturalLightLevel = 5
+        elif time24hr == 7:
+            Block.Renderer.naturalLightLevel = 7
+        elif time24hr == 8:
+            Block.Renderer.naturalLightLevel = 9
+        elif time24hr == 9:
+            Block.Renderer.naturalLightLevel = 10
+        elif time24hr == 10:
+            Block.Renderer.naturalLightLevel = 12
+        elif time24hr == 11:
+            Block.Renderer.naturalLightLevel = 14
+        elif 12 <= time24hr <= 18:
+            Block.Renderer.naturalLightLevel = 15
+        elif time24hr == 19:
+            Block.Renderer.naturalLightLevel = 12
+        elif time24hr == 20:
+            Block.Renderer.naturalLightLevel = 10
+        elif time24hr == 21:
+            Block.Renderer.naturalLightLevel = 7
+        elif time24hr == 22:
+            Block.Renderer.naturalLightLevel = 5
+        elif time24hr == 23:
+            Block.Renderer.naturalLightLevel = 3
+        elif time24hr == 24:
+            Block.Renderer.naturalLightLevel = 3
 
 
         """
@@ -428,7 +451,7 @@ while True:
 
         Block.Renderer.drawBlocksOnScreen((windowW/32+1,windowH/32-18))
             
-        Block.Renderer.drawBreakingOverlay(blockBreakNumber)
+        Block.Renderer.drawBreakingOverlay(blockBreakNumber,layer)
                     
         """
         player logic

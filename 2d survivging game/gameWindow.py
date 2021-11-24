@@ -60,6 +60,7 @@ class Gui():
     exitToMenuButton = pg.image.load("./Images/Gui/exit to menu button.png").convert_alpha()
 
 class World():
+    time = 0
     openWorld = None
     spawnCoords = [0,0]
     def generateWorld():
@@ -130,6 +131,7 @@ class World():
                     Block.Grid.placeBlockBg((x,y),Block.Type.BlockType.dirt,True)
             except:
                 pass
+        World.time = 20000
         World.spawnCoords = [500,500]
 
 class Block():
@@ -246,6 +248,7 @@ class Block():
                 },
                 "worldData":{
                 "spawnCoords":World.spawnCoords,
+                "time":World.time
                 }
             }
             
@@ -261,6 +264,7 @@ class Block():
                 np.savetxt(worldFile,Block.BlockMatrix[row])
                 np.savetxt(worldFileBg,Block.bgBlockMatrix[row])
             worldFile.close()
+            worldFileBg.close()
 
         def loadWorld(fileName):
             with open(f"./saves/{fileName}_data.json", "r") as inputData:
@@ -269,6 +273,7 @@ class Block():
             inventory.Inventory.grid = data['playerData']['playerInventoryGrid']
             inventory.Inventory.stackAmount = data['playerData']['playerInventoryStackGrid']
             World.spawnCoords = data['worldData']['spawnCoords']
+            World.time = data['worldData']['time']
             for i in data['containerData']['containers']:
                 inventory.Inventory.containers += [Container(i[0],i[1],i[2],i[3])]
             World.openWorld = fileName
@@ -324,15 +329,22 @@ class Block():
                 Block.BlockMatrix[y][x] = 0
                 Block.bgBlockMatrix[y][x] = 0
 
-        def getBlockAtLocation(location):
+        def getBlockAtLocation(location,layer = 1):
 
             x = math.floor((location[0]+Character.characterDrawLocation[0])/blockSize)
             y = math.floor((location[1]+Character.characterDrawLocation[1]-600)/blockSize)
 
-            return Block.BlockMatrix[y][x]
+            if layer == 1:
+                return Block.BlockMatrix[y][x]
+            elif layer == 2:
+                return Block.bgBlockMatrix[y][x]
 
-        def getBlockAtLocation2(location):
-            return Block.BlockMatrix[location[1]][location[0]]
+        def getBlockAtLocation2(location,layer = 1):
+            if layer == 1:
+                return Block.BlockMatrix[location[1]][location[0]]
+            elif layer == 2:
+                return Block.bgBlockMatrix[location[1]][location[0]]
+            
 
     class Renderer():     #glow block
         emmisiveBlocks = [[10,15]]
@@ -367,9 +379,6 @@ class Block():
             lightGrid = Block.Renderer.lightingGrid
             returnValue = None
 
-           #maxSurrounding = max(lightGrid[y-1][x-1],lightGrid[y-1][x],lightGrid[y-1][x+1],
-                #lightGrid[y][x-1],lightGrid[y][x+1],
-                #lightGrid[y+1][x-1],lightGrid[y+1][x],lightGrid[y+1][x+1])
             maxSurrounding = max(lightGrid[y-1][x],
                    lightGrid[y][x-1],lightGrid[y][x+1],
                    lightGrid[y+1][x])
@@ -380,7 +389,7 @@ class Block():
             if Block.bgBlockMatrix[y][x] == 0 and Block.BlockMatrix[y][x] == 0:
                 return max(Block.Renderer.naturalLightLevel,maxSurrounding-2)
             if maxSurrounding > Block.Renderer.minLightValue:
-                return maxSurrounding - 5
+                return maxSurrounding - 2
             return Block.Renderer.minLightValue
 
         def drawLightOverlay(surface,level,pos):
@@ -393,8 +402,8 @@ class Block():
 
             surface.blit(Block.Renderer.lightingOverlayList[level],(x,y))
 
-        def drawBreakingOverlay(blockBreakNumber):
-            if blockBreakNumber > 1 and Block.Grid.getBlockAtLocation2(Block.Grid.blockBreakingPos) != Block.Type.BlockType.air:
+        def drawBreakingOverlay(blockBreakNumber,lay):
+            if blockBreakNumber > 1 and Block.Grid.getBlockAtLocation2(Block.Grid.blockBreakingPos,lay) != Block.Type.BlockType.air:
                    Block.Renderer.drawBlock(ForeGround.display,pg.image.load("./Images/block icons/breakingOverlays/stage"+str(blockBreakNumber)+".png").convert_alpha(),(Block.Grid.blockBreakingPos[0],Block.Grid.blockBreakingPos[1]))
         def drawBlocksOnScreen(drawSize):
             for y in range(math.floor(Character.characterLocation[1]-20),math.floor(Character.characterLocation[1]+drawSize[1])):
