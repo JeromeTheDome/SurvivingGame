@@ -11,8 +11,6 @@ from itemIds import Items
 import craftingRecipies
 from pygame.locals import *
 from entity import Entity
-import noise
-import random
 import os
 from container import Container
 from gameWindow import World
@@ -251,16 +249,14 @@ while True:
         keyboardInput = pg.key.get_pressed()
         #sets the cursor off screen
         pygame.mouse.set_cursor((8,8),(0,0),(0,0,0,0,0,0,0,0),(0,0,0,0,0,0,0,0))
-        #caps the framreate at 60
-        clock.tick(60)
-        #print(int(clock.get_fps()))
+        #gets time since last frame also called the frame delta or delta time
+        World.deltaTime = clock.tick(60)/10
         #START
         if placingMatrix == "foreground":
             layer = 1
         elif placingMatrix == "background":
             layer = 2
 
-        
         #rounds the window size to the nearest number divisible by 32 and moves the player to the proper position
         for event in ev:
             if event.type == pg.VIDEORESIZE:
@@ -276,7 +272,7 @@ while True:
         #world stuff
         if World.time >= 43200:
             World.time = 0
-        World.time += 1
+        World.time += World.deltaTime-1
         #checks mouse input
         #right click
         if pg.mouse.get_pressed(3) == (False,False,True):
@@ -368,14 +364,15 @@ while True:
 
             Block.Grid.SetBlockBreakCoord((ForeGround.getMousePos()[0]+Character.characterDrawLocation[0], (ForeGround.getMousePos()[1]+Character.characterDrawLocation[1])-600))
 
-            blockBreakSpeed = Block.Type.determineBreakingSpeed()
+            blockBreakSpeed = Block.Type.determineBreakingSpeed(layer)
             if Block.Grid.getBlockAtLocation2(Block.Grid.blockBreakingPos,layer) == Block.Type.BlockType.air:
                     blockBreakNumber = 1
 
             if iterNum%blockBreakSpeed == 0:
                 blockBreakNumber += 1
             if blockBreakNumber%6 == 0:
-                Inventory.addItem(Block.Grid.getBlockAtLocation2(Block.Grid.blockBreakingPos,layer))
+                entities += [Entity(Block.Grid.translateToBlockCoords(ForeGround.getMousePos()),(16,16),0,Block.Grid.getBlockAtLocation2(Block.Grid.blockBreakingPos,layer))]
+                #Inventory.addItem(Block.Grid.getBlockAtLocation2(Block.Grid.blockBreakingPos,layer))
                 Block.Grid.breakBlock((ForeGround.getMousePos()[0],ForeGround.getMousePos()[1]),layer)
                 blockBreakNumber = 1
         else:
@@ -461,14 +458,10 @@ while True:
         Character.healthUpdate(entities)
 
         #physics stuff
-        
-        #floors the players position to prevent clipping
-        if Character.characterLocation[1]%1 != 0 and yVelocity == 0:
-            Character.characterLocation[1] = math.floor(Character.characterLocation[1])
 
-        #adds velocity to the player, effectively gravity
-        yVelocity += 0.2
-        realYVel += 0.2
+        #adds y velocity to the player, effectively gravity
+        yVelocity += 0.01*World.deltaTime
+        realYVel += 0.01*World.deltaTime
 
         #terminal velocity
         if yVelocity > 1:
@@ -492,7 +485,7 @@ while True:
                 #jump
                 if keyboardInput[pg.K_SPACE]:
                     if Character.Pos.newCollisionCheck()[4] == 1:
-                        yVelocity -= 0.5
+                        yVelocity -= 0.15*World.deltaTime
                 #block interaction
                 if keyboardInput[K_e]:
                     if Inventory.craftingTableOpen == True:
@@ -524,8 +517,10 @@ while True:
         Character.Pos.update()
         #draw character at the end AFTER(DO NOT FORGOR💀) setting game logic for position
         Character.Render.drawStillX(ForeGround.display,Character.characterImage)
-
-        Character.characterLocation[1] += yVelocity
+        for i in range(10):
+            if Character.Pos.newCollisionCheck()[4] == 1 and yVelocity > 0:
+                break
+            Character.characterLocation[1] += yVelocity*0.1
 
         """
         hud/inventory code
@@ -738,7 +733,6 @@ while True:
         """
         any ending functions such as iteration numbers or updates of that kind or misc renderings
         """
-
         #draws cursor with block where player cursor is
         ForeGround.display.blit(ForeGround.cursorIcon,(ForeGround.getMousePos()[0]-12,ForeGround.getMousePos()[1]-9))
         ForeGround.display.blit(Items.iconList[Inventory.itemOnCursor],(ForeGround.getMousePos()[0]-12,ForeGround.getMousePos()[1]-9))

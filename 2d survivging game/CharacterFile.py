@@ -1,8 +1,8 @@
+from numpy.lib.npyio import recfromtxt
 import pygame as pg
 import gameWindow
 import math
 import inventory
-import itemIds
 
 worldLength = 1000
 worldHeight = 1000
@@ -23,8 +23,8 @@ class Character():
     characterDrawLocation = [400,400]
     characterBoundingBox = pg.Rect(383,505,36,72)
                     #top left               #bottom left           #top right             #bottom right          #bottom          #head hitbox
-    boundingBoxes = [pg.Rect(383,519,18,16),pg.Rect(383,545,18,16),pg.Rect(401,518,18,16),pg.Rect(401,545,18,16),pg.Rect(387,561,28,16),pg.Rect(392,503,18,8)]
-    playerSpeed = 0.3
+    boundingBoxes = [pg.Rect(383,519,18,16),pg.Rect(383,545,18,16),pg.Rect(401,518,18,16),pg.Rect(401,545,18,16),pg.Rect(387,561,28,11),pg.Rect(392,503,18,8)]
+    playerSpeed = 0.1
     characterImage = 1
 
     #character images
@@ -36,7 +36,7 @@ class Character():
     class Input():
         movingIter = 1
         direction = "right"
-        animationSpeed = 2
+        animationSpeed = 4
         blockType = 2 #dirt. .Block dosent exist just right here for some reason
         def inputKey(keyboardInput,iterNum,entities):
             #blockType logic
@@ -69,18 +69,22 @@ class Character():
                 #updates player pos
                 if doMove1 == True:
                     moveCount = 0
-                    while moveCount <= Character.playerSpeed:
-                        if Character.Pos.newCollisionCheck()[0] != 1:
+                    while moveCount <= Character.playerSpeed*gameWindow.World.deltaTime:
+                        if Character.Pos.newCollisionCheck()[0] != 1 and Character.Pos.newCollisionCheck()[1] != 1:
                             Character.characterLocation[0] -= 0.1
                             moveCount += 0.1
+                        elif Character.Pos.newCollisionCheck()[1] == 1 and iterNum%3 == 0 and Character.Pos.newCollisionCheck()[5] != 1 and Character.Pos.newCollisionCheck()[0] != 1 and Character.Pos.newCollisionCheck()[4] == 1:
+                            Character.characterLocation[1] -= 1
+                            Character.characterLocation[0] -= 0.1
+                            if Character.Pos.newCollisionCheck()[0] == 1:
+                                Character.characterLocation[1] += 1
+                                Character.characterLocation[0] += 0.1
+                            break
                         else:
                             break
-                    if Character.Pos.newCollisionCheck()[1] == 1 and iterNum%3 == 0 and Character.Pos.newCollisionCheck()[5] != 1:
-                        Character.characterLocation[1] -= 1
-                        Character.characterLocation[0] -= Character.playerSpeed
                 Character.Pos.update()
                 #decides what animation to use for the character
-                if moving == True and iterNum%Character.Input.animationSpeed == 0:
+                if moving == True and iterNum%int(Character.Input.animationSpeed+gameWindow.World.deltaTime*2) == 0:
                     Character.characterImage = Character.Render.SpritePick(Character.Input.direction,Character.Input.movingIter)
                     if Character.Input.movingIter >= 4:
                         Character.Input.movingIter = 1
@@ -96,17 +100,21 @@ class Character():
                 #updates player pos
                 if doMove == True:
                     moveCount = 0
-                    while moveCount <= Character.playerSpeed:
-                        if Character.Pos.newCollisionCheck()[2] != 1:
+                    while moveCount <= Character.playerSpeed*gameWindow.World.deltaTime:
+                        if (Character.Pos.newCollisionCheck()[2] != 1) and Character.Pos.newCollisionCheck()[3] != 1:
                             Character.characterLocation[0] += 0.1
                             moveCount += 0.1
+                        elif Character.Pos.newCollisionCheck()[3] == 1 and iterNum%3 == 0 and Character.Pos.newCollisionCheck()[5] != 1 and Character.Pos.newCollisionCheck()[2] != 1 and Character.Pos.newCollisionCheck()[4] == 1:
+                            Character.characterLocation[1] -= 1
+                            Character.characterLocation[0] += 0.1
+                            if Character.Pos.newCollisionCheck()[2] == 1:
+                                Character.characterLocation[1] += 1
+                                Character.characterLocation[0] -= 0.1
+                            break
                         else:
                             break
-                    if Character.Pos.newCollisionCheck()[3] == 1 and iterNum%3 == 0 and Character.Pos.newCollisionCheck()[5] != 1:
-                        Character.characterLocation[1] -= 1
-                        Character.characterLocation[0] += Character.playerSpeed
                 #decides what animation to use for the character
-                if moving == True and iterNum%Character.Input.animationSpeed == 0:
+                if moving == True and iterNum%int(Character.Input.animationSpeed+gameWindow.World.deltaTime*2) == 0:
                     Character.characterImage = Character.Render.SpritePick(Character.Input.direction,Character.Input.movingIter)
                     if Character.Input.movingIter >= 4:
                         Character.Input.movingIter = 1
@@ -121,14 +129,6 @@ class Character():
                     Character.characterImage = Character.Image.characterStillLeft
                    Character.Input.movingIter = 1
             
-           
-
-            if keyboardInput[pg.K_LSHIFT]:
-              Character.playerSpeed =  0.4
-              Character.Input.animationSpeed = 2
-            else:
-              Character.playerSpeed = 0.3
-              Character.Input.animationSpeed = 4
 
     class Image():
         global blockSize
@@ -154,7 +154,7 @@ class Character():
                              pg.Rect(Character.characterScreenCoords[0],Character.characterScreenCoords[1]+40,18,16), #bottom left
                              pg.Rect(Character.characterScreenCoords[0]+18,Character.characterScreenCoords[1]+13,18,16),#top right
                              pg.Rect(Character.characterScreenCoords[0]+18,Character.characterScreenCoords[1]+40,18,16),#bottom right
-                             pg.Rect(Character.characterScreenCoords[0]+3,Character.characterScreenCoords[1]+56,28,16), #bottom
+                             pg.Rect(Character.characterScreenCoords[0]+3,Character.characterScreenCoords[1]+56,28,11), #bottom
                              pg.Rect(Character.characterScreenCoords[0]+8,Character.characterScreenCoords[1],18,8)] #head 
 
         #checks for collisions in a specified position relative to the player and returns true or false
@@ -191,12 +191,12 @@ class Character():
             for y in range(math.floor(Character.characterLocation[1]-5+yOff),math.floor(Character.characterLocation[1]+3+yOff)):
                 for x in range(math.floor(Character.characterLocation[0]+9+xOff),math.floor(Character.characterLocation[0]+17+xOff)): 
                     if gameWindow.Block.BlockMatrix[y][x] != gameWindow.Block.Type.BlockType.air:
-                        rectX = x - Character.characterLocation[0]# + math.floor(Character.characterScreenCoords[0]/32)
-                        rectY = y - (Character.characterLocation[1]) + 19# + math.floor(Character.characterScreenCoords[1]/32)
+                        rectX = x - Character.characterLocation[0]
+                        rectY = y - (Character.characterLocation[1]) + 19
                     
 
-                        rectX = rectX * blockSize# - 352
-                        rectY = rectY * blockSize# - 512
+                        rectX = rectX * blockSize
+                        rectY = rectY * blockSize
 
                         blockChecking = pg.Rect((rectX,rectY),(32,32))
 
