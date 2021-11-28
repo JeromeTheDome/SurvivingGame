@@ -138,41 +138,6 @@ class World():
 class Block():
     #start of subclasses
     class Type():
-        def determineBreakingSpeed(layer):
-            pickBreakSpeedMod = 1
-            shovelBreakSpeedMod = 1
-            axeBreakSpeedMod = 1
-            if inventory.Inventory.selectedSlot != None and 51 <= inventory.Inventory.grid[0][inventory.Inventory.selectedSlot] <= 100:
-                if inventory.Inventory.grid[0][inventory.Inventory.selectedSlot] == itemIds.Items.Id.defaultPick:
-                    pickBreakSpeedMod = 0.15
-                    shovelBreakSpeedMod = 1
-                    axeBreakSpeedMod = 1
-                elif inventory.Inventory.grid[0][inventory.Inventory.selectedSlot] == itemIds.Items.Id.defaultAxe:
-                    pickBreakSpeedMod = 1
-                    shovelBreakSpeedMod = 1
-                    axeBreakSpeedMod = 0.15
-                elif inventory.Inventory.grid[0][inventory.Inventory.selectedSlot] == itemIds.Items.Id.defaultShovel:
-                    pickBreakSpeedMod = 1
-                    shovelBreakSpeedMod = 0.15
-                    axeBreakSpeedMod = 1
-            if Block.Grid.getBlockAtLocation2(Block.Grid.blockBreakingPos,layer) == Block.Type.BlockType.dirt:
-                blockBreakSpeed = 10 * shovelBreakSpeedMod
-            elif Block.Grid.getBlockAtLocation2(Block.Grid.blockBreakingPos,layer) == Block.Type.BlockType.grass:
-                blockBreakSpeed = 20 * shovelBreakSpeedMod
-            elif Block.Grid.getBlockAtLocation2(Block.Grid.blockBreakingPos,layer) == Block.Type.BlockType.sand:
-                blockBreakSpeed = 20 * shovelBreakSpeedMod
-            elif Block.Grid.getBlockAtLocation2(Block.Grid.blockBreakingPos,layer) == Block.Type.BlockType.stone:
-                blockBreakSpeed = 30 * pickBreakSpeedMod
-            elif Block.Grid.getBlockAtLocation2(Block.Grid.blockBreakingPos,layer) == Block.Type.BlockType.wood:
-                blockBreakSpeed = 30 * axeBreakSpeedMod
-            elif Block.Grid.getBlockAtLocation2(Block.Grid.blockBreakingPos,layer) == Block.Type.BlockType.log:
-                blockBreakSpeed = 30 * axeBreakSpeedMod
-            elif Block.Grid.getBlockAtLocation2(Block.Grid.blockBreakingPos,layer) == Block.Type.BlockType.leaves:
-                blockBreakSpeed = 5
-            else:
-                blockBreakSpeed = 20
-            return blockBreakSpeed
-
         class BlockType(IntEnum):
             air = 0
             stone = 1
@@ -185,9 +150,13 @@ class Block():
             craftingTable = 8
             chest = 9
             glowBlock = 10
-            lastentry = 11
+            glass = 11
+            doorTop = 12
+            doorBottom = 13
+            doorOpen = 14
+            lastentry = 15
         
-        xCollideBlocks = []
+        xCollideBlocks = [14] #any block ids in this list will have collisions disabled
 
         #list of foreground blocks
         List = [pg.image] * BlockType.lastentry
@@ -202,6 +171,10 @@ class Block():
         List[BlockType.craftingTable] = pg.image.load("./Images/block icons/craftingTable.png").convert()
         List[BlockType.chest] = pg.image.load("./Images/block icons/chest.png").convert()
         List[BlockType.glowBlock] = pg.image.load("./Images/block icons/glowBlock.png").convert()
+        List[BlockType.glass] = pg.image.load("./Images/block icons/glass.png").convert()
+        List[BlockType.doorTop] = pg.image.load("./Images/block icons/doorTop.png").convert()
+        List[BlockType.doorBottom] = pg.image.load("./Images/block icons/doorBottom.png").convert()
+        List[BlockType.doorOpen] = pg.image.load("./Images/block icons/doorOpen.png").convert()
         #list of background blocks
         bgList = [pg.image] * BlockType.lastentry
         bgList[BlockType.stone] = pg.image.load("./Images/bg block icons/stone.png").convert()
@@ -214,8 +187,47 @@ class Block():
         bgList[BlockType.craftingTable] = pg.image.load("./Images/bg block icons/craftingTable.png").convert()
         bgList[BlockType.chest] = pg.image.load("./Images/bg block icons/chest.png").convert()
         bgList[BlockType.glowBlock] = pg.image.load("./Images/bg block icons/glowBlock.png").convert()
+        bgList[BlockType.glass] = pg.image.load("./Images/bg block icons/glass.png").convert_alpha()
         #set colorkey for transparent textures
         List[BlockType.leaves].set_colorkey((255,0,255))
+        List[BlockType.glass].set_colorkey((255,0,255))
+        List[BlockType.doorTop].set_colorkey((255,0,255))
+        List[BlockType.doorBottom].set_colorkey((255,0,255))
+        List[BlockType.doorOpen].set_colorkey((255,0,255))
+
+        def determineBreakingSpeed(layer):
+                pickBreakSpeedMod = 1
+                shovelBreakSpeedMod = 1
+                axeBreakSpeedMod = 1
+                blockAtBreakPos = Block.Grid.getBlockAtLocation2(Block.Grid.blockBreakingPos,layer)
+                if inventory.Inventory.selectedSlot != None and 51 <= inventory.Inventory.grid[0][inventory.Inventory.selectedSlot] <= 100:
+                    if inventory.Inventory.grid[0][inventory.Inventory.selectedSlot] == itemIds.Items.Id.defaultPick:
+                        pickBreakSpeedMod = 0.15
+                        shovelBreakSpeedMod = 1
+                        axeBreakSpeedMod = 1
+                    elif inventory.Inventory.grid[0][inventory.Inventory.selectedSlot] == itemIds.Items.Id.defaultAxe:
+                        pickBreakSpeedMod = 1
+                        shovelBreakSpeedMod = 1
+                        axeBreakSpeedMod = 0.15
+                    elif inventory.Inventory.grid[0][inventory.Inventory.selectedSlot] == itemIds.Items.Id.defaultShovel:
+                        pickBreakSpeedMod = 1
+                        shovelBreakSpeedMod = 0.15
+                        axeBreakSpeedMod = 1
+                breakSpeedDict = {
+                    Block.Type.BlockType.dirt:10*shovelBreakSpeedMod, #dirt
+                    Block.Type.BlockType.grass:20 * shovelBreakSpeedMod, #grass
+                    Block.Type.BlockType.sand:20 * shovelBreakSpeedMod, #sand
+                    Block.Type.BlockType.stone:30 * pickBreakSpeedMod, #stone
+                    Block.Type.BlockType.wood:30 * axeBreakSpeedMod, #wood
+                    Block.Type.BlockType.log:30 * axeBreakSpeedMod, #log
+                    Block.Type.BlockType.leaves:5, #leaves
+                    "defaultBreakSpeed":20
+                }
+                try: #catch exception in case of undefined breakspeed
+                    blockBreakSpeed = breakSpeedDict[blockAtBreakPos]
+                except:
+                    blockBreakSpeed = breakSpeedDict['defaultBreakSpeed']
+                return blockBreakSpeed
 
     global worldLength
     global numBlocks
@@ -326,7 +338,7 @@ class Block():
             Block.Grid.blockBreakingPos[0] = x
             Block.Grid.blockBreakingPos[1] = y
 
-        def placeBlock(position,blockType,skipRowTranslation = False):
+        def placeBlock(position,blockType,skipRowTranslation = False,offset = (0,0)):
             #translate grid based input into screen cords
             if skipRowTranslation != True:
 
@@ -335,8 +347,8 @@ class Block():
             else:
                 x = position[0]
                 y = position[1]
-            if Block.BlockMatrix[y][x] == Block.Type.BlockType.air:
-                Block.BlockMatrix[y][x] = blockType
+            if Block.BlockMatrix[y+offset[1]][x+offset[0]] == Block.Type.BlockType.air:
+                Block.BlockMatrix[y+offset[1]][x+offset[0]] = blockType
 
         def placeBlockBg(position,blockType,skipRowTranslation = False):
             #translate grid based input into screen cords
@@ -363,15 +375,15 @@ class Block():
                 Block.BlockMatrix[y][x] = 0
                 Block.bgBlockMatrix[y][x] = 0
 
-        def getBlockAtLocation(location,layer = 1):
+        def getBlockAtLocation(location,layer = 1,offset = (0,0)):
 
             x = math.floor((location[0]+Character.characterDrawLocation[0])/blockSize)
             y = math.floor((location[1]+Character.characterDrawLocation[1]-600)/blockSize)
 
             if layer == 1:
-                return Block.BlockMatrix[y][x]
+                return Block.BlockMatrix[y+offset[1]][x+offset[0]]
             elif layer == 2:
-                return Block.bgBlockMatrix[y][x]
+                return Block.bgBlockMatrix[y+offset[1]][x+offset[0]]
 
         def getBlockAtLocation2(location,layer = 1):
             if layer == 1:
@@ -382,6 +394,7 @@ class Block():
 
     class Renderer():     #glow block
         emmisiveBlocks = [[10,15]]
+        transparentBlocks = [0,11]
 
         lightingOverlayList = []
         #colored light overlay list
@@ -424,7 +437,7 @@ class Block():
 
             x = x * blockSize
             y = y * blockSize
-
+            
             surface.blit(blockType,(x,y))
 
         def calcLighting(pos):
@@ -439,8 +452,20 @@ class Block():
             for i in Block.Renderer.emmisiveBlocks:
                 if Block.BlockMatrix[y][x] == i[0] or Block.bgBlockMatrix[y][x] == i[0]:
                     return i[1]
-            if Block.bgBlockMatrix[y][x] == 0 and Block.BlockMatrix[y][x] == 0 and y < 550:
+            #checks if blocks are transparent
+            for i in Block.Renderer.transparentBlocks:
+                if Block.bgBlockMatrix[y][x] == i:
+                    bgTransparent = True
+                else:
+                    bgTransparent = False
+                if Block.BlockMatrix[y][x] == i:
+                    fgTranparent = True
+                else:
+                    fgTranparent = False
+
+            if (Block.bgBlockMatrix[y][x] == 0 or bgTransparent == True) and (Block.BlockMatrix[y][x] == 0 or fgTranparent == True) and y < 550:
                 return max(Block.Renderer.naturalLightLevel,maxSurrounding-2)
+
             if maxSurrounding > Block.Renderer.minLightValue:
                 return maxSurrounding - 2
             return Block.Renderer.minLightValue
@@ -485,7 +510,7 @@ class Block():
             for y in range(math.floor(Character.characterLocation[1]-20),math.floor(Character.characterLocation[1]+drawSize[1])):
                 for x in range(math.floor(Character.characterLocation[0]),math.floor(Character.characterLocation[0]+drawSize[0])): 
                         #draws background blocks
-                        if Block.bgBlockMatrix[y][x] != Block.Type.BlockType.air and Block.BlockMatrix[y][x] == Block.Type.BlockType.air:
+                        if Block.bgBlockMatrix[y][x] != Block.Type.BlockType.air:
                             Block.Renderer.drawBlock(ForeGround.display,Block.Type.bgList[Block.bgBlockMatrix[y][x]],(x,y))
                         #draws foreground blocks and lighting overlay
                         if Block.Renderer.lightingGrid[y][x] != 1:

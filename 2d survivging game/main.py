@@ -14,6 +14,8 @@ from entity import Entity
 import os
 from container import Container
 from gameWindow import World
+from blockInteractionHandler import InteractionHandler
+from blockPlaceLogic import blockPlaceLogicTable,PlaceLogic
 
 """
 to do list:
@@ -260,7 +262,7 @@ while True:
         #rounds the window size to the nearest number divisible by 32 and moves the player to the proper position
         for event in ev:
             if event.type == pg.VIDEORESIZE:
-                flags = DOUBLEBUF|RESIZABLE
+                flags = DOUBLEBUF
                 ForeGround.display = pg.display.set_mode((math.floor(windowW/32)*32,math.floor(windowH/32)*32),flags)
                 
                 windowDeltaX = (windowW-windowWlast)/32
@@ -282,10 +284,14 @@ while True:
                 if Inventory.grid[0][Inventory.selectedSlot] != None:
                     if Inventory.grid[0][Inventory.selectedSlot] == Items.Id.chest:
                         Inventory.containers += [Container((Block.Grid.translateToBlockCoords(ForeGround.getMousePos())[0],Block.Grid.translateToBlockCoords(ForeGround.getMousePos())[1]),1)]
-                    if placingMatrix == "foreground":
-                        Block.Grid.placeBlock((ForeGround.getMousePos()[0],ForeGround.getMousePos()[1]),Inventory.grid[0][Inventory.selectedSlot])
-                    elif placingMatrix == "background":
-                        Block.Grid.placeBlockBg((ForeGround.getMousePos()[0],ForeGround.getMousePos()[1]),Inventory.grid[0][Inventory.selectedSlot])
+                    if Inventory.grid[0][Inventory.selectedSlot] <= 50:
+                        if placingMatrix == "foreground":
+                            try:
+                                blockPlaceLogicTable[Inventory.grid[0][Inventory.selectedSlot]]()
+                            except KeyError:
+                                blockPlaceLogicTable['default']()
+                        elif placingMatrix == "background":
+                            Block.Grid.placeBlockBg((ForeGround.getMousePos()[0],ForeGround.getMousePos()[1]),Inventory.grid[0][Inventory.selectedSlot])
         #left click
         if pg.mouse.get_pressed(3) == (True,False,False):
             if Inventory.open == False:
@@ -372,7 +378,6 @@ while True:
                 blockBreakNumber += 1
             if blockBreakNumber%6 == 0:
                 entities += [Entity(Block.Grid.translateToBlockCoords(ForeGround.getMousePos()),(16,16),0,Block.Grid.getBlockAtLocation2(Block.Grid.blockBreakingPos,layer))]
-                #Inventory.addItem(Block.Grid.getBlockAtLocation2(Block.Grid.blockBreakingPos,layer))
                 Block.Grid.breakBlock((ForeGround.getMousePos()[0],ForeGround.getMousePos()[1]),layer)
                 blockBreakNumber = 1
         else:
@@ -503,6 +508,11 @@ while True:
                                     activeContainer = i
                                     Inventory.chestOpen = True
                                     break
+                    blockPressed = Block.Grid.getBlockAtLocation((ForeGround.getMousePos()[0],ForeGround.getMousePos()[1]))
+                    if blockPressed == Block.Type.BlockType.doorBottom or blockPressed == Block.Type.BlockType.doorTop or blockPressed == Block.Type.BlockType.doorOpen:
+                        InteractionHandler.doorHandler()
+                        
+                                
                     
         #head hitbox velocity cancelation
         if Character.Pos.newCollisionCheck()[5] == 1:
@@ -525,135 +535,12 @@ while True:
         """
         hud/inventory code
         """
+        if Inventory.chestOpen == True:
+            InteractionHandler.chestHandler(activeContainer,ev)
+
         #cragting table stuff
         if Inventory.craftingTableOpen == True:
-            #draws crafting interface and handles containers for it
-            for y in range(3):
-                for x in range(3):
-                    craftingBoxRect = pg.Rect((x*48+500,y*48+500),(48,48))
-                    Inventory.Render.renderBox(((x*48+500),(y*48+500)),Inventory.craftingTableGrid[y][x])
-                    ForeGround.display.blit(myfont.render(str(Inventory.craftingTableStackAmount[y][x]), False, (150, 150, 150)),((x*48+500)+30,(y*48+500)+24))
-                    for event in ev:
-                        if event.type == pg.MOUSEBUTTONDOWN:
-                            if pg.mouse.get_pressed(3) == (True,False,False) and craftingBoxRect.collidepoint(ForeGround.getMousePos()[0],ForeGround.getMousePos()[1]):
-                                temporaryItem = Inventory.itemOnCursor
-                                temporaryItemCount = Inventory.itemCountOnCursor
-
-                                Inventory.itemCountOnCursor = Inventory.craftingTableStackAmount[y][x]
-                                Inventory.itemOnCursor = Inventory.craftingTableGrid[y][x]
-
-                                Inventory.craftingTableStackAmount[y][x] = temporaryItemCount
-                                Inventory.craftingTableGrid[y][x] = temporaryItem
-                            if pg.mouse.get_pressed(3) == (False,True,False) and craftingBoxRect.collidepoint(ForeGround.getMousePos()[0],ForeGround.getMousePos()[1]):
-                                if Inventory.itemOnCursor == Items.Id.empty:
-                                    Inventory.craftingTableStackAmount[y][x] -= 1
-                                    Inventory.itemOnCursor = Inventory.craftingTableGrid[y][x]
-                                    Inventory.itemCountOnCursor += 1
-                                    if Inventory.craftingTableStackAmount[y][x] <= 0:
-                                        Inventory.craftingTableGrid[y][x] = Items.Id.empty
-
-                                elif Inventory.itemOnCursor == Inventory.craftingTableGrid[y][x]:
-                                    Inventory.craftingTableStackAmount[y][x] -= 1
-                                    if Inventory.craftingTableStackAmount[y][x] <= 0:
-                                        Inventory.craftingTableGrid[y][x] = Items.Id.empty
-                                    Inventory.itemCountOnCursor += 1 
-                                elif Inventory.itemOnCursor != Items.Id.empty and Inventory.craftingTableGrid[y][x] == Items.Id.empty:
-                                    Inventory.craftingTableGrid[y][x] = Inventory.itemOnCursor
-                                    Inventory.craftingTableStackAmount[y][x] += 1
-                                    Inventory.itemCountOnCursor -= 1
-                                    if Inventory.itemCountOnCursor <= 0:
-                                        Inventory.itemOnCursor = Items.Id.empty
-
-            #checks crafting table container against a bunch of recipies
-            Inventory.craftingTableOutputBox = 0
-            Inventory.craftingTableOutputAmount = 0
-            for i in craftingRecipies.craftingTableRecipies:
-                if Inventory.craftingTableGrid[0][0] == i[0][0] and Inventory.craftingTableGrid[0][1] == i[0][1] and Inventory.craftingTableGrid[0][2] == i[0][2]:
-                    if Inventory.craftingTableGrid[1][0] == i[1][0] and Inventory.craftingTableGrid[1][1] == i[1][1] and Inventory.craftingTableGrid[1][2] == i[1][2]:
-                        if Inventory.craftingTableGrid[2][0] == i[2][0] and Inventory.craftingTableGrid[2][1] == i[2][1] and Inventory.craftingTableGrid[2][2] == i[2][2]:
-                            Inventory.craftingTableOutputBox = i[3][0]
-                            Inventory.craftingTableOutputAmount = i[3][1]
-                            break
-            #does the same thing for the output box
-            craftingBoxRect = pg.Rect((548,695),(48,48))
-            ForeGround.display.blit(Inventory.Render.arrowDown,(554,647))
-            Inventory.Render.renderBox((548,695),Inventory.craftingTableOutputBox)
-            ForeGround.display.blit(myfont.render(str(Inventory.craftingTableOutputAmount), False, (150, 150, 150)),(584,719))
-            for event in ev:
-                if event.type == pg.MOUSEBUTTONDOWN:
-                    if pg.mouse.get_pressed(3) == (True,False,False) and craftingBoxRect.collidepoint(ForeGround.getMousePos()[0],ForeGround.getMousePos()[1]):
-                        if Inventory.itemOnCursor == Items.Id.empty:
-                            Inventory.itemCountOnCursor = Inventory.craftingTableOutputAmount
-                            Inventory.itemOnCursor = Inventory.craftingTableOutputBox
-
-                            Inventory.craftingTableOutputAmount = 0
-                            Inventory.craftingTableOutputBox = 0
-
-                        elif Inventory.itemOnCursor == Inventory.craftingTableOutputBox:
-                            Inventory.itemCountOnCursor += Inventory.craftingTableOutputAmount
-
-                            Inventory.craftingTableOutputAmount = 0
-                            Inventory.craftingTableOutputBox = 0
-
-                        for y in range(3):
-                            for x in range(3):
-                                if Inventory.craftingTableGrid[y][x] != Items.Id.empty:
-                                    Inventory.craftingTableStackAmount[y][x] -= 1
-                                    if Inventory.craftingTableStackAmount[y][x] <= 0:
-                                        Inventory.craftingTableGrid[y][x] = Items.Id.empty
-        #logic for if a chest is opened
-        if Inventory.chestOpen == True:
-            if activeContainer.position[0]-Character.characterLocation[0] < 5 or activeContainer.position[0]-Character.characterLocation[0] > 20: #or activeContainer.position[1]-Character.characterLocation[1] < 10 or activeContainer.position[1]-Character.characterLocation[1] > 20:
-                Inventory.chestOpen = False
-            #checks for interaction with chest grid
-            for y in range(len(activeContainer.grid)):
-                for x in range(len(activeContainer.grid[0])):
-                    chestBoxRect = pg.Rect(((x*48),(y*48+288)),(48,48))
-                    Inventory.Render.renderBox(((x*48),(y*48+288)),activeContainer.grid[y][x])
-                    ForeGround.display.blit(myfont.render(str(activeContainer.stackGrid[y][x]), False, (150, 150, 150)),((x*48)+30,(y*48+288)+24))
-                    for event in ev:
-                        #mouse input
-                        if event.type == pg.MOUSEBUTTONDOWN:
-                            if pg.mouse.get_pressed(3) == (True,False,False) and chestBoxRect.collidepoint(ForeGround.getMousePos()[0],ForeGround.getMousePos()[1]):
-                                if activeContainer.grid[y][x] != Inventory.itemOnCursor:
-                                    temporaryItem = Inventory.itemOnCursor
-                                    temporaryItemCount = Inventory.itemCountOnCursor
-
-                                    Inventory.itemCountOnCursor = activeContainer.stackGrid[y][x]
-                                    Inventory.itemOnCursor = activeContainer.grid[y][x]
-
-                                    activeContainer.stackGrid[y][x] = temporaryItemCount
-                                    activeContainer.grid[y][x] = temporaryItem
-                                elif Inventory.itemOnCursor == activeContainer.grid[y][x]:
-                                        for i in range(Inventory.itemCountOnCursor):
-                                            if activeContainer.stackGrid[y][x] < 100:
-                                                activeContainer.stackGrid[y][x] += 1
-                                                Inventory.itemCountOnCursor -= 1
-                                            else:
-                                                break
-                                        if Inventory.itemCountOnCursor <= 0:
-                                            Inventory.itemOnCursor = Items.Id.empty
-
-                            if pg.mouse.get_pressed(3) == (False,True,False) and chestBoxRect.collidepoint(ForeGround.getMousePos()[0],ForeGround.getMousePos()[1]):
-                                if Inventory.itemOnCursor == Items.Id.empty:
-                                    activeContainer.stackGrid[y][x] -= 1
-                                    Inventory.itemOnCursor = activeContainer.grid[y][x]
-                                    Inventory.itemCountOnCursor += 1
-                                    if activeContainer.stackGrid[y][x] <= 0:
-                                        activeContainer.grid[y][x] = Items.Id.empty
-
-                                elif Inventory.itemOnCursor == activeContainer.grid[y][x]:
-                                    activeContainer.stackGrid[y][x] -= 1
-                                    if activeContainer.stackGrid[y][x] <= 0:
-                                        activeContainer.grid[y][x] = Items.Id.empty
-                                    Inventory.itemCountOnCursor += 1 
-                                elif Inventory.itemOnCursor != Items.Id.empty and activeContainer.grid[y][x] == Items.Id.empty:
-                                    activeContainer.grid[y][x] = Inventory.itemOnCursor
-                                    activeContainer.stackGrid[y][x] += 1
-                                    Inventory.itemCountOnCursor -= 1
-                                    if Inventory.itemCountOnCursor <= 0:
-                                        Inventory.itemOnCursor = Items.Id.empty
-                        
+            InteractionHandler.craftingHandler(ev)
 
         if (Character.characterLocation[0]-Inventory.activeCraftingTableCoords[0]) > 5 or (Character.characterLocation[0]-Inventory.activeCraftingTableCoords[0]) <-5 or (Character.characterLocation[1]-Inventory.activeCraftingTableCoords[1]) > 5 or (Character.characterLocation[1]-Inventory.activeCraftingTableCoords[1]) <-5:
             Inventory.craftingTableOpen = False
@@ -727,6 +614,8 @@ while True:
                         Inventory.addItem(Items.Id.craftingTable)
                         Inventory.addItem(Items.Id.chest)
                         Inventory.addItem(Items.Id.glowBlock)
+                        Inventory.addItem(Items.Id.glass)
+                        Inventory.addItem(Items.Id.door)
 
 
 

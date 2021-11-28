@@ -182,24 +182,42 @@ class Character():
                     return True
                 else:
                     return False
-        def newCollisionCheck():
+        def newCollisionCheck(drawHitboxes = False):
+            """
+            checks collisions with the players hitboxes against nearby blocks and returns a list of boxes that have detected a collision
+            returns a list with 6 values 1 or 0 corelating to colided boxes
+            [top left, bottom left, top right, bottom right, bottom, head]
+            takes one optional param:
+            
+            drawHitBoxes: if set to true, it will draw the players hitboxes while checking for collisions. used for debugging.
+            """
             returnValue = [0,0,0,0,0,0]
 
             yOff = math.floor(Character.characterScreenCoords[1]/32-16)
             xOff = math.floor(Character.characterScreenCoords[0]/32-11)
 
+            if drawHitboxes == True:
+                for i in Character.boundingBoxes:
+                    pg.draw.rect(gameWindow.ForeGround.display,(255,255,255),i)
+
             for y in range(math.floor(Character.characterLocation[1]-5+yOff),math.floor(Character.characterLocation[1]+3+yOff)):
                 for x in range(math.floor(Character.characterLocation[0]+9+xOff),math.floor(Character.characterLocation[0]+17+xOff)): 
+                    #loops through list of blocks with collisions disabled
+                    noCollide = False
+                    for i in gameWindow.Block.Type.xCollideBlocks:
+                        if gameWindow.Block.BlockMatrix[y][x] == i:
+                            noCollide = True
+                            break
                     if gameWindow.Block.BlockMatrix[y][x] != gameWindow.Block.Type.BlockType.air:
+                        if noCollide == True:
+                            continue
                         rectX = x - Character.characterLocation[0]
                         rectY = y - (Character.characterLocation[1]) + 19
-                    
 
                         rectX = rectX * blockSize
                         rectY = rectY * blockSize
 
                         blockChecking = pg.Rect((rectX,rectY),(32,32))
-
                         if blockChecking.colliderect(Character.boundingBoxes[0]):
                             returnValue[0] = 1
                         if blockChecking.colliderect(Character.boundingBoxes[1]):

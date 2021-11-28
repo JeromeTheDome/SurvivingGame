@@ -4,6 +4,10 @@ import pygame as pg
 class Items():
     #defines item ids
     class Id(IntEnum):
+            #blocks reserved for any given purpose
+           # reserved = []
+
+
             empty = 0
             #item ids 1 to 50 are reserved for blocks. blocks item ids are identical to block ids
             stone = 1
@@ -16,6 +20,9 @@ class Items():
             craftingTable = 8
             chest = 9
             glowBlock = 10
+            glass = 11
+            reserved = 12
+            door = 13
             #51 to 100 reserved for tools
             defaultPick = 51
             defaultAxe = 52
@@ -38,9 +45,15 @@ class Items():
     iconList[Id.craftingTable] = pg.image.load("./Images/Item Icons/craftingTableIcon.png").convert()
     iconList[Id.chest] = pg.image.load("./Images/Item Icons/chestIcon.png").convert()
     iconList[Id.glowBlock] = pg.image.load("./Images/Item Icons/glowBlockIcon.png").convert()
+    iconList[Id.glass] = pg.image.load("./Images/Item Icons/glassIcon.png").convert()
+    iconList[Id.door] = pg.image.load("./Images/Item Icons/doorIcon.png").convert()
     #tools/weapons
     iconList[Id.defaultPick] = pg.image.load("./Images/Item Icons/pickaxe.png").convert_alpha()
     iconList[Id.defaultAxe] = pg.image.load("./Images/Item Icons/axe.png").convert_alpha()
     iconList[Id.defaultShovel] = pg.image.load("./Images/Item Icons/shovel.png").convert_alpha()
     #other items
     iconList[Id.toolHandle] = pg.image.load("./Images/Item Icons/toolHandle.png").convert_alpha()
+    
+    #set colorkeys
+    iconList[Id.glass].set_colorkey((255,0,255))
+    iconList[Id.door].set_colorkey((255,0,255))
