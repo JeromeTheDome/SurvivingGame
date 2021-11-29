@@ -279,19 +279,14 @@ while True:
         #right click
         if pg.mouse.get_pressed(3) == (False,False,True):
             if Block.Grid.getBlockAtLocation((ForeGround.getMousePos()[0],ForeGround.getMousePos()[1]),layer) == Block.Type.BlockType.air and Inventory.selectedSlot != None:
-                Inventory.stackAmount[0][Inventory.selectedSlot] -= 1
-
                 if Inventory.grid[0][Inventory.selectedSlot] != None:
-                    if Inventory.grid[0][Inventory.selectedSlot] == Items.Id.chest:
-                        Inventory.containers += [Container((Block.Grid.translateToBlockCoords(ForeGround.getMousePos())[0],Block.Grid.translateToBlockCoords(ForeGround.getMousePos())[1]),1)]
                     if Inventory.grid[0][Inventory.selectedSlot] <= 50:
-                        if placingMatrix == "foreground":
-                            try:
-                                blockPlaceLogicTable[Inventory.grid[0][Inventory.selectedSlot]]()
-                            except KeyError:
-                                blockPlaceLogicTable['default']()
-                        elif placingMatrix == "background":
-                            Block.Grid.placeBlockBg((ForeGround.getMousePos()[0],ForeGround.getMousePos()[1]),Inventory.grid[0][Inventory.selectedSlot])
+                        try:
+                            if blockPlaceLogicTable[Inventory.grid[0][Inventory.selectedSlot]](placingMatrix) == True:
+                                Inventory.stackAmount[0][Inventory.selectedSlot] -= 1
+                        except KeyError:
+                            if blockPlaceLogicTable['default'](placingMatrix) == True:
+                                Inventory.stackAmount[0][Inventory.selectedSlot] -= 1
         #left click
         if pg.mouse.get_pressed(3) == (True,False,False):
             if Inventory.open == False:
@@ -440,9 +435,9 @@ while True:
         elif time24hr == 22:
             Block.Renderer.naturalLightLevel = 5
         elif time24hr == 23:
-            Block.Renderer.naturalLightLevel = 3
+            Block.Renderer.naturalLightLevel = 4
         elif time24hr == 24:
-            Block.Renderer.naturalLightLevel = 3
+            Block.Renderer.naturalLightLevel = 4
 
 
         """
