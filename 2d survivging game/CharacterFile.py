@@ -84,7 +84,7 @@ class Character():
                             break
                 Character.Pos.update()
                 #decides what animation to use for the character
-                if moving == True and iterNum%int(Character.Input.animationSpeed+gameWindow.World.deltaTime*2) == 0:
+                if moving == True and iterNum%Character.Input.animationSpeed == 0:
                     Character.characterImage = Character.Render.SpritePick(Character.Input.direction,Character.Input.movingIter)
                     if Character.Input.movingIter >= 4:
                         Character.Input.movingIter = 1
@@ -114,7 +114,7 @@ class Character():
                         else:
                             break
                 #decides what animation to use for the character
-                if moving == True and iterNum%int(Character.Input.animationSpeed+gameWindow.World.deltaTime*2) == 0:
+                if moving == True and iterNum%Character.Input.animationSpeed == 0:
                     Character.characterImage = Character.Render.SpritePick(Character.Input.direction,Character.Input.movingIter)
                     if Character.Input.movingIter >= 4:
                         Character.Input.movingIter = 1

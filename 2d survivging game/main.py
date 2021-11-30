@@ -123,7 +123,7 @@ while True:
         #clears screen
         pg.draw.rect(ForeGround.display,(255,255,255),pg.Rect((0,0),(800,800)))
         #renders the block background
-        Block.Renderer.drawBlocksOnScreen((windowW/32+1,windowH/32-18))
+        Block.Renderer.drawUiBg(Block.Type.BlockType.dirt)
         #defines the rectangle and checks for pressess on the load game button
         loadGameButton = pg.Rect((50,350),(300,100))
         ForeGround.display.blit(Gui.loadGameButton,(50,350))
@@ -145,7 +145,7 @@ while True:
         pygame.mouse.set_cursor((8,8),(0,0),(0,0,0,0,0,0,0,0),(0,0,0,0,0,0,0,0))
         #clears screen with while background
         pg.draw.rect(ForeGround.display,(255,255,255),pg.Rect((0,0),(800,800)))
-        Block.Renderer.drawBlocksOnScreen((windowW/32+1,windowH/32-18))
+        Block.Renderer.drawUiBg(Block.Type.BlockType.dirt)
         worlds = os.listdir("./saves")
         for i in range(len(worlds)):
             try:
@@ -188,7 +188,7 @@ while True:
         ev = pg.event.get()
         pygame.mouse.set_cursor((8,8),(0,0),(0,0,0,0,0,0,0,0),(0,0,0,0,0,0,0,0))
         pg.draw.rect(ForeGround.display,(255,255,255),pg.Rect((0,0),(800,800)))
-        Block.Renderer.drawBlocksOnScreen((windowW/32+1,windowH/32-18))
+        Block.Renderer.drawUiBg(Block.Type.BlockType.dirt)
         #creates back button
         backButton = pg.Rect((20,30),(50,50))
         ForeGround.display.blit(Gui.backButton,(20,20))
@@ -455,6 +455,7 @@ while True:
         """
         if Character.health <= 0:
             realYVel = 0
+            yVelocity = 0
         Character.healthUpdate(entities)
 
         #physics stuff
@@ -470,7 +471,7 @@ while True:
         #zeroes out velocity if the player is on the ground
         if Character.Pos.newCollisionCheck()[4] == 1 or Character.characterLocation[1] > 950:
             yVelocity = 0
-            if realYVel > 2.5:
+            if realYVel > 2.5*World.deltaTime:
                 Character.health-=realYVel*6
             realYVel = 0
 

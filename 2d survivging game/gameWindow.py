@@ -392,8 +392,9 @@ class Block():
                 return Block.bgBlockMatrix[location[1]][location[0]]
             
 
-    class Renderer():     #glow block
-        emmisiveBlocks = [[10,15]]
+    class Renderer(): 
+                        #glow block
+        emmisiveBlocks = [[10,15,(255,0,0)]]
         transparentBlocks = [0,11]
 
         lightingOverlayList = []
@@ -401,6 +402,7 @@ class Block():
         rLightingOverlayList = []
         gLightingOverlayList = []
         bLightingOverlayList = []
+        wLightingOverlayList = []
 
         lightingOverlayList += [pg.image.load("./Images/block icons/lightingOverlays/0.png").convert_alpha()]
         lightingGrid = [[1 for i in range(worldLength)]for i in range(worldHeight)]
@@ -409,6 +411,25 @@ class Block():
 
         minLightValue = 1
         naturalLightLevel = 15
+
+        colorInvertTable = {
+            1:15,
+            2:14,
+            3:13,
+            4:12,
+            5:11,
+            6:10,
+            7:9,
+            8:8,
+            9:7,
+            10:6,
+            11:5,
+            12:4,
+            13:3,
+            14:2,
+            15:1
+        }
+
         for i in range(0,15):
             lightingOverlayList += [pg.image.load(f"./Images/block icons/lightingOverlays/{i}.png").convert_alpha()]
         for g in range(3):
@@ -439,19 +460,55 @@ class Block():
             y = y * blockSize
             
             surface.blit(blockType,(x,y))
+        
+        def blendColors(colors,brightness):
+            blendedColor = [0,0,0]
+            for i in range(len(colors)):
+                if i != (1,1,1):
+                    blendedColor[0]+=colors[i][0]
+                    blendedColor[1]+=colors[i][1]
+                    blendedColor[2]+=colors[i][2]
+            blendedColor = [int(blendedColor[0]/i+1),int(blendedColor[1]/i+1),int(blendedColor[2]/i+1)]
+            if blendedColor[0] > 255:
+                blendedColor[0] = 255
+            if blendedColor[1] > 255:
+                blendedColor[1] = 255
+            if blendedColor[2] > 255:
+                blendedColor[2] = 255
+            return (blendedColor[0],blendedColor[1],blendedColor[2])
+                
 
-        def calcLighting(pos):
+        def calcLighting(grid,pos):
             x = pos[0]
             y = pos[1]
-            lightGrid = Block.Renderer.lightingGrid
+            lightGrid = grid
+            coloredLightGrid = Block.Renderer.coloredLightingGrid
 
             maxSurrounding = max(lightGrid[y-1][x],
                    lightGrid[y][x-1],lightGrid[y][x+1],
                    lightGrid[y+1][x])
+            numColor = 0
+            maxPos = [y-1,x]
+            #coloredBool = coloredLightGrid[y-1][x] != (1,1,1) or coloredLightGrid[y+1][x] != (1,1,1) or coloredLightGrid[y][x+1] != (1,1,1) or coloredLightGrid[y][x-1] != (1,1,1)
+            #blendBool = coloredLightGrid[y-1][x] != coloredLightGrid[y+1][x] != coloredLightGrid[y][x+1] != coloredLightGrid[y][x-1]
+            #if coloredBool and blendBool: 
+            #    blendedColor = Block.Renderer.blendColors((coloredLightGrid[y-1][x],coloredLightGrid[y][x-1],coloredLightGrid[y][x+1],coloredLightGrid[y+1][x]))
+            #else:
+            #blendedColor = "maxpos"
 
             for i in Block.Renderer.emmisiveBlocks:
                 if Block.BlockMatrix[y][x] == i[0] or Block.bgBlockMatrix[y][x] == i[0]:
+                    Block.Renderer.coloredLightingGrid[y][x] = i[2]
                     return i[1]
+
+            if lightGrid[y+1][x] >= lightGrid[maxPos[1]][maxPos[0]] and coloredLightGrid[y+1][x] != (1,1,1):
+                maxPos = [y+1,x]
+
+            if lightGrid[y][x+1] >= lightGrid[maxPos[1]][maxPos[0]] and coloredLightGrid[y][x+1] != (1,1,1):
+                maxPos = [y,x+1]
+
+            if lightGrid[y][x-1] >= lightGrid[maxPos[1]][maxPos[0]] and coloredLightGrid[y][x-1] != (1,1,1):
+                maxPos = [y,x-1]
             #checks if blocks are transparent
             for i in Block.Renderer.transparentBlocks:
                 if Block.bgBlockMatrix[y][x] == i:
@@ -463,34 +520,16 @@ class Block():
                 else:
                     fgTranparent = False
 
+            if maxSurrounding-2 > Block.Renderer.naturalLightLevel:
+                Block.Renderer.coloredLightingGrid[y][x] = Block.Renderer.coloredLightingGrid[maxPos[0]][maxPos[1]]
             if (Block.bgBlockMatrix[y][x] == 0 or bgTransparent == True) and (Block.BlockMatrix[y][x] == 0 or fgTranparent == True) and y < 550:
                 return max(Block.Renderer.naturalLightLevel,maxSurrounding-2)
+            elif Block.BlockMatrix[y][x] == 0 and maxSurrounding > Block.Renderer.minLightValue:
+                return maxSurrounding-2
 
             if maxSurrounding > Block.Renderer.minLightValue:
-                return maxSurrounding - 2
+                return int(maxSurrounding*0.5)
             return Block.Renderer.minLightValue
-        
-        def calcColoredLighting(pos):
-            x = pos[0]
-            y = pos[1]
-            lightGrid = Block.Renderer.lightingGrid
-            returnValue = [0,0,0]
-
-            for g in range(3):
-                maxSurrounding = max(lightGrid[y-1][x][g],
-                    lightGrid[y][x-1][g],lightGrid[y][x+1][g],
-                    lightGrid[y+1][x][g])
-                for i in Block.Renderer.emmisiveBlocks:
-                    if Block.BlockMatrix[y][x][g] == i[0] or Block.bgBlockMatrix[y][x][g] == i[0]:
-                        returnValue[g] = i[1]
-                if Block.bgBlockMatrix[y][x] == 0 and Block.BlockMatrix[y][x] == 0 and y < 550:
-                    returnValue[g] = max(Block.Renderer.naturalLightLevel,maxSurrounding-2)
-                elif maxSurrounding > Block.Renderer.minLightValue:
-                    returnValue[g] = maxSurrounding - 2
-                else:
-                    returnValue[g] = Block.Renderer.minLightValue
-            print(returnValue)
-            return returnValue
 
         def drawLightOverlay(surface,level,pos):
             #translate grid based input into screen cords
@@ -500,8 +539,17 @@ class Block():
             x = x * blockSize
             y = y * blockSize
             
-            
-            surface.blit(Block.Renderer.lightingOverlayList[level],(x,y))
+            overlay = pygame.Surface((32,32))
+            if Block.Renderer.coloredLightingGrid[pos[1]][pos[0]] == (1,1,1):
+                level = Block.Renderer.colorInvertTable[level]
+                multiplier = 17
+            else:
+                multiplier = 8.5
+            overlay.set_alpha(int(level*multiplier))
+            overlay.fill(Block.Renderer.coloredLightingGrid[pos[1]][pos[0]])
+
+            surface.blit(overlay,(x,y))
+
 
         def drawBreakingOverlay(blockBreakNumber,lay):
             if blockBreakNumber > 1 and Block.Grid.getBlockAtLocation2(Block.Grid.blockBreakingPos,lay) != Block.Type.BlockType.air:
@@ -515,7 +563,11 @@ class Block():
                         #draws foreground blocks and lighting overlay
                         if Block.Renderer.lightingGrid[y][x] != 1:
                             Block.Renderer.drawBlock(ForeGround.display,Block.Type.List[Block.BlockMatrix[y][x]],(x,y))
-                        Block.Renderer.lightingGrid[y][x] = Block.Renderer.calcLighting((x,y))
-                        if Block.Renderer.lightingGrid[y][x] != 15:
+                        Block.Renderer.lightingGrid[y][x] = Block.Renderer.calcLighting(Block.Renderer.lightingGrid,(x,y))
+                        if Block.Renderer.lightingGrid[y][x] != 15 or Block.Renderer.coloredLightingGrid[y][x] != (1,1,1):
                             Block.Renderer.drawLightOverlay(ForeGround.display,Block.Renderer.lightingGrid[y][x],(x,y))
+        def drawUiBg(blockType):
+            for y in range(25):
+                for x in range(25):
+                    ForeGround.display.blit(Block.Type.List[blockType],(x*32,y*32))
                         
