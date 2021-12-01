@@ -163,4 +163,7 @@ class InteractionHandler():
                 clickPos = Block.Grid.translateToBlockCoords((ForeGround.getMousePos()[0],ForeGround.getMousePos()[1]))
                 Block.BlockMatrix[clickPos[1]][clickPos[0]] = Block.Type.BlockType.doorBottom
                 Block.BlockMatrix[clickPos[1]-1][clickPos[0]] = Block.Type.BlockType.doorTop
+    def glowBlockHandler():
+        x,y = Block.Grid.translateToBlockCoords((ForeGround.getMousePos()[0],ForeGround.getMousePos()[1]))
+        Block.Renderer.emmisiveOveride.append([(x,y),(255,255,255),15])
         

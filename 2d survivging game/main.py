@@ -507,6 +507,8 @@ while True:
                     blockPressed = Block.Grid.getBlockAtLocation((ForeGround.getMousePos()[0],ForeGround.getMousePos()[1]))
                     if blockPressed == Block.Type.BlockType.doorBottom or blockPressed == Block.Type.BlockType.doorTop or blockPressed == Block.Type.BlockType.doorOpen:
                         InteractionHandler.doorHandler()
+                    elif blockPressed == Block.Type.BlockType.glowBlock:
+                        InteractionHandler.glowBlockHandler()
                         
                                 
                     
