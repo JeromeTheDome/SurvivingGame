@@ -10,12 +10,14 @@ import noise
 
 class ForeGround():
   cursorIcon = pg.image.load("./Images/background images/cursor.png")
-
   #inits the pygame window
   def __init__(self):
     pg.init()
     flags = DOUBLEBUF|RESIZABLE
     ForeGround.display = pg.display.set_mode((800,800),flags)
+    windowIcon = pg.image.load("./Images/Item Icons/grassIcon.png")
+    pg.display.set_icon(windowIcon)
+    pg.display.set_caption("Survivging game")
   def getMousePos():
    mousePos = [pg.mouse.get_pos()[0], pg.mouse.get_pos()[1]]
    return mousePos
@@ -609,7 +611,7 @@ class Block():
             overlay.fill(Block.Renderer.coloredLightingGrid[pos[1]][pos[0]])
 
             surface.blit(overlay,(x,y))
-######################################################
+####################################################
 
 
         def drawBreakingOverlay(blockBreakNumber,lay):

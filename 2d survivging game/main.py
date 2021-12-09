@@ -16,6 +16,7 @@ from container import Container
 from gameWindow import World
 from blockInteractionHandler import InteractionHandler
 from blockPlaceLogic import blockPlaceLogicTable,PlaceLogic
+from blockBreakLogic import BreakLogic,breakLogicLookup
 
 """
 to do list:
@@ -372,8 +373,10 @@ while True:
             if iterNum%blockBreakSpeed == 0:
                 blockBreakNumber += 1
             if blockBreakNumber%6 == 0:
-                entities += [Entity(Block.Grid.translateToBlockCoords(ForeGround.getMousePos()),(16,16),0,Block.Grid.getBlockAtLocation2(Block.Grid.blockBreakingPos,layer))]
-                Block.Grid.breakBlock((ForeGround.getMousePos()[0],ForeGround.getMousePos()[1]),layer)
+                try:
+                    breakLogicLookup[Block.Grid.getBlockAtLocation((ForeGround.getMousePos()[0],ForeGround.getMousePos()[1]))](entities,layer)
+                except KeyError:
+                    breakLogicLookup['default'](entities,layer)
                 blockBreakNumber = 1
         else:
                 blockBreakNumber = 1
